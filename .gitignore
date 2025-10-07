@@ -1,0 +1,42 @@
+
+# --- Python & Flask ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# --- Virtual Environment ---
+venv/
+env/
+.venv/
+
+# --- Environment Variables ---
+.env
+
+# --- Databases ---
+*.db
+*.sqlite3
+
+# --- VS Code ---
+.vscode/
+*.code-workspace
+
+# --- OS-generated files ---
+.DS_Store
+Thumbs.db
+
+# --- PyInstaller ---
+build/
+dist/
+*.spec
+
+# --- Cache & Temp Files ---
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# --- NodeJS (if you later add npm for frontend) ---
+node_modules/
+package-lock.json

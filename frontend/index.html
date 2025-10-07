@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Feedback System</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>Smart Feedback Collection and Analysis System</h1>
+                <p>Share your experience and help us improve. Your feedback is analyzed in real-time using sentiment analysis.</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="feedback-form-container">
+                <div class="form-header">
+                    <h2>Submit Your Feedback</h2>
+                    <p>We value your opinion and use advanced AI to understand your sentiment</p>
+                </div>
+
+                <form id="feedbackForm" class="feedback-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name (Optional):</label>
+                            <input type="text" id="name" name="name" placeholder="Enter your name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email (Optional):</label>
+                            <input type="email" id="email" name="email" placeholder="Enter your email">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Feedback Category:</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="product">Product Feedback</option>
+                            <option value="service">Service Feedback</option>
+                            <option value="website">Website Experience</option>
+                            <option value="support">Customer Support</option>
+                            <option value="general">General Feedback</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rating">Rating:</label>
+                        <div class="rating-container">
+                            <div class="rating-stars">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                            <div class="rating-text" id="ratingText">Select a rating</div>
+                        </div>
+                        <input type="hidden" id="rating" name="rating" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Your Feedback:</label>
+                        <textarea id="message" name="message" rows="6" 
+                                  placeholder="Please share your detailed feedback... (Minimum 10 characters)" 
+                                  required></textarea>
+                        <div class="char-count">
+                            <span id="charCount">0</span>/1000 characters
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <span class="btn-text">Submit Feedback</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="loading-spinner"></span>
+                                Analyzing Sentiment...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+
+                <div id="responseMessage" class="response-message"></div>
+            </div>
+
+            <div class="features-section">
+                <h3>How It Works</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h4>AI Sentiment Analysis</h4>
+                        <p>Uses Hugging Face transformer models to accurately analyze feedback sentiment</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h4>Real-time Analytics</h4>
+                        <p>View comprehensive analytics and insights from all feedback submissions</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h4>Mobile Friendly</h4>
+                        <p>Fully responsive design that works perfectly on all devices</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h4>Instant Alerts</h4>
+                        <p>Automatic email notifications for negative feedback requiring attention</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-actions">
+                <a href="dashboard.html" class="btn btn-secondary">
+                    <span>📊</span>
+                    View Analytics Dashboard
+                </a>
+            </div>
+            <div class="footer-info">
+                <p>Powered by Hugging Face AI • Built with Flask & Modern Web Technologies</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="scripts/main.js"></script>
+</body>
+</html>

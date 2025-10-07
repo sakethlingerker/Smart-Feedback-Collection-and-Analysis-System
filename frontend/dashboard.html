@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Analytics Dashboard sa</title>
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1>Feedback Analytics Dashboard</h1>
+                <p>Real-time insights and sentiment analysis from customer feedback</p>
+            </div>
+
+            <div class="header-stats" id="headerStats">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <h3>Total Feedbacks</h3>
+                        <span id="totalFeedbacks" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-info">
+                        <h3>Average Rating</h3>
+                        <span id="averageRating" class="stat-value">0.0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">😊</div>
+                    <div class="stat-info">
+                        <h3>Positive Rate</h3>
+                        <span id="positiveRate" class="stat-value">0%</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🤖</div>
+                    <div class="stat-info">
+                        <h3>AI Accuracy</h3>
+                        <span id="aiAccuracy" class="stat-value">High</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <h2>Feedback Analytics</h2>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Sentiment Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="sentimentChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Rating Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="ratingChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Emotion Wheel</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="emotionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Priority Action Matrix</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Row 2 -->
+                    <div class="chart-container">
+                        <h3>Historical Trend Comparison</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Live Sentiment Meter</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="sentimentMeter"></canvas>
+                            <div class="meter-value" id="meterValue">75%</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Topic-Sentiment Correlation</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="topicChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Sentiment Intensity Gauge</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="intensityGauge"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WordCloud Section -->
+            <section class="wordcloud-section">
+                <h2>Feedback WordCloud</h2>
+                <div class="wordcloud-container">
+                    <div id="wordcloudLoading" class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p>Generating WordCloud...</p>
+                    </div>
+                    <img id="wordcloudImage" style="display: none;" alt="WordCloud of feedback">
+                    <div id="topWords" class="top-words"></div>
+                </div>
+            </section>
+
+            <!-- Recent Feedbacks Section -->
+            <section class="feedbacks-section">
+                <div class="section-header">
+                    <h2>Recent Feedbacks</h2>
+                    <button onclick="refreshDashboard()" class="btn-refresh">
+                        <span>🔄</span>
+                        Refresh
+                    </button>
+                </div>
+                <div id="feedbackTable" class="feedback-table">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p>Loading feedbacks...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="dashboard-footer">
+            <div class="footer-actions">
+                <a href="index.html" class="btn btn-primary">
+                    <span>📝</span>
+                    Submit New Feedback
+                </a>
+                <button onclick="exportData()" class="btn btn-secondary">
+                    <span>📥</span>
+                    Export Data
+                </button>
+            </div>
+            <div class="footer-info">
+                <p> Real-time Analytics • Last updated: <span id="lastUpdated">Just now</span></p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete this feedback? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button onclick="closeDeleteModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="confirmDelete()" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/dashboard.js"></script>
+</body>
+
+</html>

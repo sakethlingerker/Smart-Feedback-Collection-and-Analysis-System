@@ -1,0 +1,23 @@
+# Flask and extensions
+flask==2.3.3
+flask-cors==4.0.0
+flask-sqlalchemy==3.0.5
+flask-mail==0.9.1
+
+# Environment and HTTP
+python-dotenv==1.0.0
+requests==2.31.0
+
+# Sentiment Analysis & NLP
+textblob==0.17.1
+nltk==3.8.1
+transformers==4.30.0
+  # For Hugging Face models. For CPU-only: torch==2.0.1+cpu --find-links https://download.pytorch.org/whl/torch_stable.html
+
+# Image and Data Visualization
+pillow==9.5.0
+wordcloud==1.9.2
+matplotlib==3.7.1
+
+# Production Server (recommended)
+gunicorn==21.2.0
