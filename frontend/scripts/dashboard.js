@@ -34,7 +34,7 @@ initializeCharts() {
                 data: {
                     labels: ['Positive', 'Negative', 'Neutral'],
                     datasets: [{
-                        data: [1, 1, 1],
+                        data: [0, 0, 0],
                         backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
                         borderWidth: 2,
                         borderColor: '#ffffff'
@@ -87,7 +87,7 @@ initializeCharts() {
                 data: {
                     labels: ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Anger'],
                     datasets: [{
-                        data: [1, 1, 1, 1, 1, 1],
+                        data: [0, 0, 0, 0, 0, 0],
                         backgroundColor: [
                             '#fbbf24', '#10b981', '#8b5cf6', 
                             '#ec4899', '#3b82f6', '#ef4444'
@@ -166,7 +166,7 @@ initializeCharts() {
                     datasets: [
                         {
                             label: 'Current Month',
-                            data: [65, 72, 68, 75],
+                            data: [0, 0, 0, 0],
                             borderColor: '#3b82f6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             tension: 0.4,
@@ -174,7 +174,7 @@ initializeCharts() {
                         },
                         {
                             label: 'Previous Month',
-                            data: [58, 64, 62, 60],
+                            data: [0, 0, 0, 0],
                             borderColor: '#6b7280',
                             backgroundColor: 'rgba(107, 114, 128, 0.1)',
                             tension: 0.4,
@@ -204,7 +204,7 @@ initializeCharts() {
                 data: {
                     labels: ['Positive', 'Neutral', 'Negative'],
                     datasets: [{
-                        data: [70, 20, 10], // Current sentiment score
+                        data: [0, 0, 0],
                         backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
                         borderWidth: 0,
                         circumference: 180,
@@ -234,14 +234,14 @@ initializeCharts() {
                     datasets: [
                         {
                             label: 'Positive',
-                            data: [65, 45, 30, 55, 70],
+                            data: [0, 0, 0, 0, 0],
                             backgroundColor: '#10b981',
                             borderColor: '#059669',
                             borderWidth: 1
                         },
                         {
                             label: 'Negative',
-                            data: [15, 35, 50, 25, 10],
+                            data: [0, 0, 0, 0, 0],
                             backgroundColor: '#ef4444',
                             borderColor: '#dc2626',
                             borderWidth: 1
@@ -271,7 +271,7 @@ initializeCharts() {
                 data: {
                     labels: ['Strong Positive', 'Weak Positive', 'Neutral', 'Weak Negative', 'Strong Negative'],
                     datasets: [{
-                        data: [25, 20, 30, 15, 10],
+                        data: [0, 0, 0, 0, 0],
                         backgroundColor: [
                             '#059669', // Strong Positive
                             '#10b981', // Weak Positive
@@ -301,22 +301,31 @@ initializeCharts() {
 }
 
 updateCharts(data) {
+    if (!data) {
+        console.warn('No data provided to update charts');
+        return;
+    }
+
     // 1. Update Sentiment Distribution
-    this.charts.sentiment.data.datasets[0].data = [
-        data.sentiment_distribution.positive || 0,
-        data.sentiment_distribution.negative || 0,
-        data.sentiment_distribution.neutral || 0
-    ];
-    this.charts.sentiment.update();
+    if (data.sentiment_distribution) {
+        this.charts.sentiment.data.datasets[0].data = [
+            data.sentiment_distribution.positive || 0,
+            data.sentiment_distribution.negative || 0,
+            data.sentiment_distribution.neutral || 0
+        ];
+        this.charts.sentiment.update();
+    }
 
     // 2. Update Rating Distribution
-    const ratingData = [0, 0, 0, 0, 0];
-    Object.entries(data.rating_distribution).forEach(([rating, count]) => {
-        const index = parseInt(rating) - 1;
-        if (index >= 0 && index < 5) ratingData[index] = count;
-    });
-    this.charts.rating.data.datasets[0].data = ratingData;
-    this.charts.rating.update();
+    if (data.rating_distribution) {
+        const ratingData = [0, 0, 0, 0, 0];
+        Object.entries(data.rating_distribution).forEach(([rating, count]) => {
+            const index = parseInt(rating) - 1;
+            if (index >= 0 && index < 5) ratingData[index] = count;
+        });
+        this.charts.rating.data.datasets[0].data = ratingData;
+        this.charts.rating.update();
+    }
 
     // 3. Update Emotion Wheel
     if (data.emotion_distribution) {
@@ -327,7 +336,7 @@ updateCharts(data) {
     }
 
     // 4. Update Priority Action Matrix
-    if (data.priority_matrix) {
+    if (data.priority_matrix && Array.isArray(data.priority_matrix)) {
         this.charts.priorityMatrix.data.datasets.forEach(dataset => dataset.data = []);
         
         data.priority_matrix.forEach(issue => {
@@ -351,44 +360,50 @@ updateCharts(data) {
 
     // 5. Update Historical Trend
     if (data.historical_trend) {
-        this.charts.historicalTrend.data.labels = data.historical_trend.labels;
-        this.charts.historicalTrend.data.datasets[0].data = data.historical_trend.current;
-        this.charts.historicalTrend.data.datasets[1].data = data.historical_trend.previous;
+        this.charts.historicalTrend.data.labels = data.historical_trend.labels || ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+        this.charts.historicalTrend.data.datasets[0].data = data.historical_trend.current || [0, 0, 0, 0];
+        this.charts.historicalTrend.data.datasets[1].data = data.historical_trend.previous || [0, 0, 0, 0];
         this.charts.historicalTrend.update();
     }
 
     // 6. Update Live Sentiment Meter
-if (data.sentiment_meter) {
-    const positivePercent = data.sentiment_meter.positive;
-    document.getElementById('meterValue').textContent = `${positivePercent}%`;
-    
-    // Update color based on sentiment
-    const meterValue = document.getElementById('meterValue');
-    if (positivePercent >= 70) {
-        meterValue.style.color = '#10b981';
-    } else if (positivePercent >= 50) {
-        meterValue.style.color = '#f59e0b';
-    } else {
-        meterValue.style.color = '#ef4444';
+    if (data.sentiment_meter) {
+        const positivePercent = data.sentiment_meter.positive || 0;
+        const neutralPercent = data.sentiment_meter.neutral || 0;
+        const negativePercent = data.sentiment_meter.negative || 0;
+        
+        this.charts.sentimentMeter.data.datasets[0].data = [positivePercent, neutralPercent, negativePercent];
+        this.charts.sentimentMeter.update();
+        
+        document.getElementById('meterValue').textContent = `${positivePercent}%`;
+        
+        // Update color based on sentiment
+        const meterValue = document.getElementById('meterValue');
+        if (positivePercent >= 70) {
+            meterValue.style.color = '#10b981';
+        } else if (positivePercent >= 50) {
+            meterValue.style.color = '#f59e0b';
+        } else {
+            meterValue.style.color = '#ef4444';
+        }
     }
-}
 
     // 7. Update Topic-Sentiment Correlation
     if (data.topic_sentiment) {
-        this.charts.topicSentiment.data.labels = data.topic_sentiment.topics;
-        this.charts.topicSentiment.data.datasets[0].data = data.topic_sentiment.positive;
-        this.charts.topicSentiment.data.datasets[1].data = data.topic_sentiment.negative;
+        this.charts.topicSentiment.data.labels = data.topic_sentiment.topics || ['Product', 'Support', 'Price', 'Features', 'UI/UX'];
+        this.charts.topicSentiment.data.datasets[0].data = data.topic_sentiment.positive || [0, 0, 0, 0, 0];
+        this.charts.topicSentiment.data.datasets[1].data = data.topic_sentiment.negative || [0, 0, 0, 0, 0];
         this.charts.topicSentiment.update();
     }
 
     // 8. Update Sentiment Intensity Gauge
     if (data.sentiment_intensity) {
         this.charts.intensityGauge.data.datasets[0].data = [
-            data.sentiment_intensity.strong_positive,
-            data.sentiment_intensity.weak_positive,
-            data.sentiment_intensity.neutral,
-            data.sentiment_intensity.weak_negative,
-            data.sentiment_intensity.strong_negative
+            data.sentiment_intensity.strong_positive || 0,
+            data.sentiment_intensity.weak_positive || 0,
+            data.sentiment_intensity.neutral || 0,
+            data.sentiment_intensity.weak_negative || 0,
+            data.sentiment_intensity.strong_negative || 0
         ];
         this.charts.intensityGauge.update();
     }
