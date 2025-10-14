@@ -316,6 +316,103 @@ class SmartFeedbackSystem {
             }
         }, hideTime);
     }
+    getAuthHeaders() {
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    
+    if (window.authManager && window.authManager.token) {
+        headers['Authorization'] = `Bearer ${window.authManager.token}`;
+    }
+    
+    return headers;
+}
+
+// Modify the existing submitFeedback method
+async submitFeedback() {
+    if (this.isSubmitting) return;
+    
+    const form = document.getElementById('feedbackForm');
+    const formData = new FormData(form);
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoading = submitBtn.querySelector('.btn-loading');
+    
+    if (!this.validateForm(formData)) {
+        return;
+    }
+
+    this.isSubmitting = true;
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'flex';
+
+    const feedbackData = {
+        name: formData.get('name') || undefined,
+        email: formData.get('email') || undefined,
+        category: formData.get('category'),
+        rating: parseInt(formData.get('rating')),
+        message: formData.get('message').trim(),
+        timestamp: new Date().toISOString()
+    };
+
+    try {
+        // Use enhanced headers that include auth token if available
+        const response = await fetch('http://localhost:5000/api/feedback', {
+            method: 'POST',
+            headers: this.getAuthHeaders(), // Updated line
+            body: JSON.stringify(feedbackData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            let successMessage = `✅ Feedback submitted successfully! Sentiment: ${result.sentiment} (Polarity: ${result.polarity})`;
+            
+            // Add user context to message
+            if (window.authManager && window.authManager.isLoggedIn()) {
+                successMessage += ' - Saved to your account';
+            } else {
+                successMessage += ' - Submitted anonymously';
+            }
+            
+            this.showMessage(successMessage, 'success');
+            
+            // Reset form
+            form.reset();
+            this.currentRating = 0;
+            this.resetStarHighlight();
+            this.updateRatingText(0);
+            this.updateCharacterCount('');
+            
+            // Show analysis method info
+            setTimeout(() => {
+                this.showMessage(
+                    `🤖 Analysis performed using: ${result.analysis_method}`, 
+                    'info'
+                );
+            }, 3000);
+
+        } else {
+            throw new Error(result.error || 'Failed to submit feedback');
+        }
+    } catch (error) {
+        console.error('Submission error:', error);
+        this.showMessage(`❌ Error: ${error.message}`, 'error');
+    } finally {
+        this.isSubmitting = false;
+        submitBtn.disabled = false;
+        btnText.style.display = 'flex';
+        btnLoading.style.display = 'none';
+    }
+}
+
+// Add this method to update UI based on auth state
+updateAuthUI() {
+    if (window.authManager) {
+        window.authManager.updateUI();
+    }
+}
 }
 
 // Initialize the application when DOM is loaded

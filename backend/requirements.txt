@@ -3,7 +3,7 @@ flask==2.3.3
 flask-cors==4.0.0
 flask-sqlalchemy==3.0.5
 flask-mail==0.9.1
-
+flask-login==0.6.3
 # Environment and HTTP
 python-dotenv==1.0.0
 requests==2.31.0
@@ -21,3 +21,8 @@ matplotlib==3.7.1
 
 # Production Server (recommended)
 gunicorn==21.2.0
+
+# Authentication (NEW ADDITIONS)
+Werkzeug==2.3.7
+PyJWT==2.8.0
+email-validator==2.1.1  # FIXED: Changed from 2.1.0 to 2.1.1

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login -Smart Feedback Collection and Analysis System</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>Smart Feedback Collection and Analysis System</h1>
+                <p>Login to your account</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="feedback-form-container">
+                <div class="form-header">
+                    <h2>Login</h2>
+                    <p>Access your feedback history and personalized features</p>
+                </div>
+
+                <form id="loginForm" class="feedback-form">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn" id="loginBtn">
+                            <span class="btn-text">Login</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="loading-spinner"></span>
+                                Signing in...
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="auth-links">
+                        <p>Don't have an account? <a href="register.html">Register here</a></p>
+                        <p><a href="index.html">← Back to home</a></p>
+                    </div>
+                </form>
+
+                <div id="responseMessage" class="response-message"></div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-info">
+                <p>Powered by Hugging Face AI • Built with Flask & Modern Web Technologies</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="scripts/auth.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('loginBtn');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoading = submitBtn.querySelector('.btn-loading');
+    const responseMessage = document.getElementById('responseMessage');
+    
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'flex';
+    
+    if (responseMessage) {
+        responseMessage.style.display = 'none';
+    }
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    const result = await window.authManager.login(email, password);
+    
+    if (result.success) {
+        if (responseMessage) {
+            responseMessage.textContent = 'Login successful! Redirecting...';
+            responseMessage.className = 'response-message success';
+            responseMessage.style.display = 'block';
+        }
+        
+        // Redirect to appropriate page
+        setTimeout(() => {
+            if (result.user.role === 'admin') {
+                window.location.href = 'dashboard.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 1000);
+    } else {
+        if (responseMessage) {
+            responseMessage.textContent = result.error || 'Login failed';
+            responseMessage.className = 'response-message error';
+            responseMessage.style.display = 'block';
+        }
+    }
+    
+    submitBtn.disabled = false;
+    btnText.style.display = 'flex';
+    btnLoading.style.display = 'none';
+});
+    </script>
+</body>
+</html>

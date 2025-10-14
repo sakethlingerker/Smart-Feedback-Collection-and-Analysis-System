@@ -10,6 +10,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="main-nav" id="mainNav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html">Feedback System</a>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <!-- Guest Links - Show when NOT logged in -->
+                <a href="index.html" class="nav-link guest-link">Home</a>
+                <a href="login.html" class="nav-link guest-link">Login</a>
+                <a href="register.html" class="nav-link guest-link">Register</a>
+                
+                <!-- Authenticated Links - Show when logged in -->
+                <a href="index.html" class="nav-link auth-link">Home</a>
+                <a href="dashboard.html" class="nav-link auth-link admin-link">Dashboard</a>
+                <a href="profile.html" class="nav-link auth-link">My Feedback</a>
+                
+                <!-- User Menu - Show when logged in -->
+                <div class="user-menu auth-link" id="userMenu">
+                    <span class="user-info">
+                        <span id="userEmail">User</span>
+                        <small id="userRole">Role</small>
+                    </span>
+                    <button id="logoutBtn" class="logout-btn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <header>
             <div class="header-content">
@@ -118,7 +147,7 @@
 
         <footer class="footer">
             <div class="footer-actions">
-                <a href="dashboard.html" class="btn btn-secondary">
+                <a href="#" onclick="checkDashboardAccess()" class="btn btn-secondary">
                     <span>📊</span>
                     View Analytics Dashboard
                 </a>
@@ -129,6 +158,20 @@
         </footer>
     </div>
 
+    <script src="scripts/auth.js"></script>
     <script src="scripts/main.js"></script>
+    <script>
+        function checkDashboardAccess() {
+            if (window.authManager && window.authManager.isLoggedIn() && window.authManager.isAdmin()) {
+                window.location.href = 'dashboard.html';
+            } else if (window.authManager && window.authManager.isLoggedIn()) {
+                alert('Admin access required for dashboard. Please login with an admin account.');
+                window.location.href = 'login.html';
+            } else {
+                alert('Please login to access the dashboard.');
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
 </body>
 </html>

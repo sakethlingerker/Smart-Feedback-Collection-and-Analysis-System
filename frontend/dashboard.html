@@ -1,183 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback Analytics Dashboard sa</title>
-    <link rel="stylesheet" href="styles/dashboard.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback Analytics Dashboard</title>
+  <link rel="stylesheet" href="styles/dashboard.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <div class="header-content">
-                <h1>Feedback Analytics Dashboard</h1>
-                <p>Real-time insights and sentiment analysis from customer feedback</p>
-            </div>
-
-            <div class="header-stats" id="headerStats">
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-info">
-                        <h3>Total Feedbacks</h3>
-                        <span id="totalFeedbacks" class="stat-value">0</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⭐</div>
-                    <div class="stat-info">
-                        <h3>Average Rating</h3>
-                        <span id="averageRating" class="stat-value">0.0</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">😊</div>
-                    <div class="stat-info">
-                        <h3>Positive Rate</h3>
-                        <span id="positiveRate" class="stat-value">0%</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🤖</div>
-                    <div class="stat-info">
-                        <h3>AI Accuracy</h3>
-                        <span id="aiAccuracy" class="stat-value">High</span>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <main class="dashboard-main">
-            <!-- Charts Section -->
-            <section class="charts-section">
-                <h2>Feedback Analytics</h2>
-                <div class="charts-grid">
-                    <div class="chart-container">
-                        <h3>Sentiment Distribution</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="sentimentChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-container">
-                        <h3>Rating Distribution</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="ratingChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-container">
-                        <h3>Emotion Wheel</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="emotionChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-container">
-                        <h3>Priority Action Matrix</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="priorityChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Row 2 -->
-                    <div class="chart-container">
-                        <h3>Historical Trend Comparison</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="trendChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-container">
-                        <h3>Live Sentiment Meter</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="sentimentMeter"></canvas>
-                            <div class="meter-value" id="meterValue"></div>
-                        </div>
-                    </div>
-
-                    <div class="chart-container">
-                        <h3>Topic-Sentiment Correlation</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="topicChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-container">
-                        <h3>Sentiment Intensity Gauge</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="intensityGauge"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- WordCloud Section -->
-            <section class="wordcloud-section">
-                <h2>Feedback WordCloud</h2>
-                <div class="wordcloud-container">
-                    <div id="wordcloudLoading" class="loading-state">
-                        <div class="loading-spinner"></div>
-                        <p>Generating WordCloud...</p>
-                    </div>
-                    <img id="wordcloudImage" style="display: none;" alt="WordCloud of feedback">
-                    <div id="topWords" class="top-words"></div>
-                </div>
-            </section>
-
-            <!-- Recent Feedbacks Section -->
-            <section class="feedbacks-section">
-                <div class="section-header">
-                    <h2>Recent Feedbacks</h2>
-                    <button onclick="refreshDashboard()" class="btn-refresh">
-                        <span>🔄</span>
-                        Refresh
-                    </button>
-                </div>
-                <div id="feedbackTable" class="feedback-table">
-                    <div class="loading-state">
-                        <div class="loading-spinner"></div>
-                        <p>Loading feedbacks...</p>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <footer class="dashboard-footer">
-            <div class="footer-actions">
-                <a href="index.html" class="btn btn-primary">
-                    <span>📝</span>
-                    Submit New Feedback
-                </a>
-                <button onclick="exportData()" class="btn btn-secondary">
-                    <span>📥</span>
-                    Export Data
-                </button>
-            </div>
-            <div class="footer-info">
-                <p> Real-time Analytics • Last updated: <span id="lastUpdated">Just now</span></p>
-            </div>
-        </footer>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="modal">
-        <div class="modal-content">
-            <h3>Confirm Deletion</h3>
-            <p>Are you sure you want to delete this feedback? This action cannot be undone.</p>
-            <div class="modal-actions">
-                <button onclick="closeDeleteModal()" class="btn btn-secondary">Cancel</button>
-                <button onclick="confirmDelete()" class="btn btn-danger">Delete</button>
-            </div>
+  <!-- Navigation -->
+  <nav class="main-nav" id="mainNav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <a href="index.html">Feedback System</a>
+      </div>
+      <div class="nav-links" id="navLinks">
+        <!-- Authenticated Links -->
+        <a href="index.html" class="nav-link auth-link">Home</a>
+        <a href="dashboard.html" class="nav-link auth-link admin-link">Dashboard</a>
+        <a href="profile.html" class="nav-link auth-link">My Feedback</a>
+        
+        <!-- User Menu -->
+        <div class="user-menu auth-link" id="userMenu">
+          <span class="user-info">
+            <span id="userEmail">User</span>
+            <small id="userRole">Role</small>
+          </span>
+          <button id="logoutBtn" class="logout-btn">Logout</button>
         </div>
+      </div>
     </div>
+  </nav>
 
-    <script src="scripts/dashboard.js"></script>
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <div class="header-content">
+        <h1>Feedback Analytics Dashboard</h1>
+        <p>Real-time insights and sentiment analysis from customer feedback</p>
+      </div>
+
+      <div class="header-stats" id="headerStats">
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info">
+            <h3>Total Feedbacks</h3>
+            <span id="totalFeedbacks" class="stat-value">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-info">
+            <h3>Average Rating</h3>
+            <span id="averageRating" class="stat-value">0.0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">😊</div>
+          <div class="stat-info">
+            <h3>Positive Rate</h3>
+            <span id="positiveRate" class="stat-value">0%</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🤖</div>
+          <div class="stat-info">
+            <h3>AI Accuracy</h3>
+            <span id="aiAccuracy" class="stat-value">High</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <!-- Charts Section -->
+      <section class="charts-section">
+        <h2>Feedback Analytics</h2>
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3>Sentiment Distribution</h3>
+            <div class="chart-wrapper">
+              <canvas id="sentimentChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <h3>Rating Distribution</h3>
+            <div class="chart-wrapper">
+              <canvas id="ratingChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <h3>Emotion Wheel</h3>
+            <div class="chart-wrapper">
+              <canvas id="emotionChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <h3>Priority Action Matrix</h3>
+            <div class="chart-wrapper">
+              <canvas id="priorityChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="chart-container">
+            <h3>Historical Trend Comparison</h3>
+            <div class="chart-wrapper">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <h3>Live Sentiment Meter</h3>
+            <div class="chart-wrapper">
+              <canvas id="sentimentMeter"></canvas>
+              <div class="meter-value" id="meterValue"></div>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <h3>Topic-Sentiment Correlation</h3>
+            <div class="chart-wrapper">
+              <canvas id="topicChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <h3>Sentiment Intensity Gauge</h3>
+            <div class="chart-wrapper">
+              <canvas id="intensityGauge"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WordCloud Section -->
+      <section class="wordcloud-section">
+        <h2>Feedback WordCloud</h2>
+        <div class="wordcloud-container">
+          <div id="wordcloudLoading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Generating WordCloud...</p>
+          </div>
+          <img id="wordcloudImage" style="display: none" alt="WordCloud of feedback" />
+          <div id="topWords" class="top-words"></div>
+        </div>
+      </section>
+
+      <!-- Recent Feedbacks Section -->
+      <section class="feedbacks-section">
+        <div class="section-header">
+          <h2>Recent Feedbacks</h2>
+          <button onclick="refreshDashboard()" class="btn btn-secondary">
+            <span>🔄</span>
+            Refresh
+          </button>
+        </div>
+        <div id="feedbackTable" class="feedback-table">
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Loading feedbacks...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="dashboard-footer">
+      <div class="footer-actions">
+        <a href="index.html" class="btn btn-primary">
+          <span>📝</span>
+          Submit New Feedback
+        </a>
+        <button onclick="exportData()" class="btn btn-secondary">
+          <span>📥</span>
+          Export Data
+        </button>
+      </div>
+      <div class="footer-info">
+        <p>Real-time Analytics • Last updated: <span id="lastUpdated">Just now</span></p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal">
+    <div class="modal-content">
+      <h3>Confirm Deletion</h3>
+      <p>Are you sure you want to delete this feedback? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button onclick="closeDeleteModal()" class="btn btn-secondary">Cancel</button>
+        <button onclick="confirmDelete()" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/scripts/auth.js"></script>
+  <script src="/scripts/dashboard.js"></script>
+  <script>
+    // Global flag to prevent multiple initializations
+    let dashboardInitialized = false;
+
+    function initializeDashboard() {
+        if (dashboardInitialized) return;
+
+        if (!window.authManager) {
+            setTimeout(initializeDashboard, 100);
+            return;
+        }
+
+        if (!window.authManager.isLoggedIn()) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        if (!window.authManager.isAdmin()) {
+            document.body.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Inter', sans-serif; color: white;">
+                    <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.1); border-radius: 12px; backdrop-filter: blur(10px);">
+                        <h2 style="font-size: 2rem; margin-bottom: 20px;">🔒 Admin Access Required</h2>
+                        <p style="font-size: 1.2rem; margin-bottom: 30px;">Please login with an admin account to access the dashboard.</p>
+                        <a href="index.html" style="background: white; color: #667eea; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">Return Home</a>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        dashboardInitialized = true;
+        
+        if (typeof EnhancedDashboard !== 'undefined') {
+            window.dashboard = new EnhancedDashboard();
+        } else {
+            setTimeout(() => {
+                if (typeof EnhancedDashboard !== 'undefined') {
+                    window.dashboard = new EnhancedDashboard();
+                }
+            }, 500);
+        }
+    }
+
+    // Global functions
+    function refreshDashboard() {
+        if (window.dashboard) {
+            window.dashboard.loadDashboardData();
+            window.dashboard.loadRecentFeedbacks();
+            window.dashboard.loadWordCloud();
+            window.dashboard.updateLastUpdated();
+        }
+    }
+
+    function exportData() {
+        window.dashboard?.exportData?.() || alert('Export functionality is not available.');
+    }
+
+    function openDeleteModal(feedbackId) {
+        window.dashboard?.openDeleteModal?.(feedbackId);
+    }
+
+    function closeDeleteModal() {
+        window.dashboard?.closeDeleteModal?.();
+    }
+
+    function confirmDelete() {
+        window.dashboard?.confirmDelete?.();
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeDashboard);
+  </script>
 </body>
-
 </html>

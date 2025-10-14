@@ -295,3 +295,100 @@ section h2 {
     .footer-actions { flex-direction: column; }
     .btn { width: 100%; justify-content: center; }
 }
+
+
+/* Delete button styles */
+.delete-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.3s;
+}
+
+.delete-btn:hover {
+    background: #dc2626;
+}
+
+/* Feedback actions */
+.feedback-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* No data state */
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+}
+
+.no-data-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.no-data h3 {
+    margin-bottom: 8px;
+    color: #374151;
+}
+
+/* Error state */
+.error-state {
+    text-align: center;
+    padding: 40px;
+    color: #ef4444;
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+/* Modal styles for profile page */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}

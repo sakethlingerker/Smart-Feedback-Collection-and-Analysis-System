@@ -1,12 +1,19 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from models import db, Feedback
+from models import db, Feedback, User
 from sentiment_analysis import analyze_sentiment
 from wordcloud_generator import wordcloud_gen
 from email_notifier import init_email, send_negative_feedback_alert
 from config import Config
 import logging
 from datetime import datetime, timedelta
+from auth_middleware import token_required, admin_required, optional_auth
+import jwt
+from email_validator import validate_email, EmailNotValidError
+import csv
+import io
+import json
+from flask import Response, make_response
 
 # ----------------- Setup logging -----------------
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +25,7 @@ app.config.from_object(Config)
 
 # ----------------- Initialize extensions -----------------
 db.init_app(app)
-CORS(app)
+CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
 init_email(app)
 
 # ----------------- Create database tables explicitly -----------------
@@ -40,8 +47,102 @@ def home():
         ]
     })
 
+# ==================== AUTHENTICATION ROUTES ====================
+
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    try:
+        data = request.get_json()
+        
+        # Validation
+        if not data or not data.get('email') or not data.get('password'):
+            return jsonify({"error": "Email and password are required"}), 400
+        
+        # Validate email
+        try:
+            valid = validate_email(data['email'])
+            email = valid.email
+        except EmailNotValidError as e:
+            return jsonify({"error": "Invalid email address"}), 400
+        
+        # Check if user already exists
+        if User.query.filter_by(email=email).first():
+            return jsonify({"error": "User already exists"}), 409
+        
+        # Password strength check
+        if len(data['password']) < 6:
+            return jsonify({"error": "Password must be at least 6 characters"}), 400
+        
+        # Create user
+        user = User(email=email)
+        user.set_password(data['password'])
+        
+        # First user becomes admin
+        if User.query.count() == 0:
+            user.role = 'admin'
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        # Generate token
+        token = user.generate_auth_token()
+        
+        return jsonify({
+            "message": "User registered successfully",
+            "user": user.to_dict(),
+            "token": token
+        }), 201
+        
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        return jsonify({"error": "Registration failed"}), 500
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('email') or not data.get('password'):
+            return jsonify({"error": "Email and password are required"}), 400
+        
+        user = User.query.filter_by(email=data['email']).first()
+        
+        if not user or not user.check_password(data['password']):
+            return jsonify({"error": "Invalid email or password"}), 401
+        
+        if not user.is_active:
+            return jsonify({"error": "Account is deactivated"}), 401
+        
+        token = user.generate_auth_token()
+        
+        return jsonify({
+            "message": "Login successful",
+            "user": user.to_dict(),
+            "token": token
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        return jsonify({"error": "Login failed"}), 500
+
+@app.route('/api/auth/me', methods=['GET'])
+@token_required
+def get_current_user(current_user):
+    return jsonify({
+        "user": current_user.to_dict()
+    }), 200
+
+@app.route('/api/auth/logout', methods=['POST'])
+@token_required
+def logout(current_user):
+    # With JWT, logout is handled client-side by removing the token
+    return jsonify({"message": "Logout successful"}), 200
+
+# ==================== FEEDBACK ROUTES ====================
+
 @app.route('/api/feedback', methods=['POST'])
-def submit_feedback():
+@optional_auth
+def submit_feedback(current_user):
     try:
         data = request.get_json()
         if not data or not data.get('message'):
@@ -51,7 +152,7 @@ def submit_feedback():
         sentiment_result = analyze_sentiment(data['message'])
         logger.info(f"Feedback sentiment: {sentiment_result['sentiment']}")
 
-        # Save to database
+        # Save to database (enhanced to include user_id)
         feedback = Feedback(
             name=data.get('name', 'Anonymous'),
             email=data.get('email'),
@@ -61,7 +162,8 @@ def submit_feedback():
             sentiment=sentiment_result['sentiment'],
             polarity=sentiment_result['polarity'],
             subjectivity=sentiment_result['subjectivity'],
-            analysis_method=sentiment_result['method']
+            analysis_method=sentiment_result['method'],
+            user_id=current_user.id if current_user else None  # New field
         )
         db.session.add(feedback)
         db.session.commit()
@@ -71,13 +173,22 @@ def submit_feedback():
             logger.info(f"Sending negative feedback email for ID: {feedback.id}")
             send_negative_feedback_alert(feedback)
 
-        return jsonify({
+        response_data = {
             "message": "Feedback submitted successfully",
             "sentiment": sentiment_result['sentiment'],
             "polarity": round(sentiment_result['polarity'], 3),
             "analysis_method": sentiment_result['method'],
             "id": feedback.id
-        }), 201
+        }
+        
+        # Add user context if logged in
+        if current_user:
+            response_data["user_id"] = current_user.id
+            response_data["message"] += " - Saved to your account"
+        else:
+            response_data["message"] += " - Submitted anonymously"
+
+        return jsonify(response_data), 201
 
     except Exception as e:
         logger.error(f"Error submitting feedback: {e}")
@@ -91,8 +202,10 @@ def get_all_feedback():
         feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).paginate(
             page=page, per_page=per_page, error_out=False
         )
+        
+        feedback_list = [f.to_dict() for f in feedbacks.items]
         return jsonify({
-            "feedbacks": [f.to_dict() for f in feedbacks.items],
+            "feedbacks": feedback_list,
             "total": feedbacks.total,
             "pages": feedbacks.pages,
             "current_page": page
@@ -101,8 +214,51 @@ def get_all_feedback():
         logger.error(f"Error fetching feedbacks: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/user/feedback', methods=['GET'])
+@token_required
+def get_user_feedback(current_user):
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        
+        feedbacks = Feedback.query.filter_by(user_id=current_user.id)\
+            .order_by(Feedback.created_at.desc())\
+            .paginate(page=page, per_page=per_page, error_out=False)
+        
+        feedback_list = [f.to_dict() for f in feedbacks.items]
+        
+        # Mark as owner
+        for feedback in feedback_list:
+            feedback['is_owner'] = True
+        
+        return jsonify({
+            "feedbacks": feedback_list,
+            "total": feedbacks.total,
+            "pages": feedbacks.pages,
+            "current_page": page
+        })
+    except Exception as e:
+        logger.error(f"Error fetching user feedbacks: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/feedback/<int:feedback_id>', methods=['DELETE'])
+def delete_feedback(feedback_id):
+    try:
+        feedback = Feedback.query.get_or_404(feedback_id)
+        db.session.delete(feedback)
+        db.session.commit()
+        logger.info(f"Feedback {feedback_id} deleted")
+        return jsonify({"message": "Feedback deleted successfully"})
+    except Exception as e:
+        logger.error(f"Error deleting feedback {feedback_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# ==================== ANALYTICS ROUTES ====================
+
 @app.route('/api/analytics', methods=['GET'])
-def get_analytics():
+@token_required
+@admin_required
+def get_analytics(current_user):
     try:
         sentiment_stats = db.session.query(
             Feedback.sentiment, db.func.count(Feedback.id)
@@ -132,25 +288,6 @@ def get_analytics():
             Feedback.created_at >= datetime.utcnow().date() - timedelta(days=7)
         ).group_by(db.func.date(Feedback.created_at), Feedback.sentiment).all()
 
-        # Add new data for alternative visualizations
-        sentiment_by_day = db.session.query(
-            db.func.date(Feedback.created_at),
-            Feedback.sentiment,
-            db.func.count(Feedback.id)
-        ).filter(
-            Feedback.created_at >= datetime.utcnow().date() - timedelta(days=30)
-        ).group_by(db.func.date(Feedback.created_at), Feedback.sentiment).all()
-        
-        # Category distribution over time
-        category_trend = db.session.query(
-            db.func.date(Feedback.created_at),
-            Feedback.category,
-            db.func.count(Feedback.id)
-        ).filter(
-            Feedback.created_at >= datetime.utcnow().date() - timedelta(days=30)
-        ).group_by(db.func.date(Feedback.created_at), Feedback.category).all()
-        
-
         return jsonify({
             "sentiment_distribution": dict(sentiment_stats),
             "rating_distribution": dict(rating_stats),
@@ -161,21 +298,20 @@ def get_analytics():
                                 for date, sentiment, count in sentiment_trend],
             "total_feedbacks": Feedback.query.count(),
             "average_rating": round(db.session.query(db.func.avg(Feedback.rating)).scalar() or 0, 2),
-            "average_polarity": round(db.session.query(db.func.avg(Feedback.polarity)).scalar() or 0, 3)
+            "average_polarity": round(db.session.query(db.func.avg(Feedback.polarity)).scalar() or 0, 3),
+            "user_specific": True,
+            "user_feedback_count": Feedback.query.filter_by(user_id=current_user.id).count()
         })
     except Exception as e:
         logger.error(f"Error fetching analytics: {e}")
         return jsonify({"error": str(e)}), 500
-# Add these new endpoints to your backend
-
-# Add these endpoints to your backend
-# Add these new endpoints to your backend
 
 @app.route('/api/analytics/emotion-distribution')
-def get_emotion_distribution():
+@token_required
+@admin_required
+def get_emotion_distribution(current_user):
     """Get emotion distribution from feedback analysis"""
     try:
-        # Sample emotion analysis - replace with your actual emotion detection
         emotions = {
             'joy': 0,
             'trust': 0,
@@ -187,11 +323,9 @@ def get_emotion_distribution():
             'anticipation': 0
         }
         
-        # Analyze recent feedback for emotions
         recent_feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).limit(100).all()
         
         for feedback in recent_feedbacks:
-            # Simple keyword-based emotion detection (replace with ML model)
             text_lower = feedback.message.lower()
             
             if any(word in text_lower for word in ['happy', 'great', 'love', 'excellent', 'awesome']):
@@ -217,22 +351,24 @@ def get_emotion_distribution():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics/priority-matrix')
-def get_priority_matrix():
+@token_required
+@admin_required
+def get_priority_matrix(current_user):
     """Get priority matrix data based on feedback analysis"""
     try:
         priority_matrix = [
             {
                 'name': 'Slow Website Performance',
-                'impact': 9,  # High impact on user experience
-                'frequency': 8,  # Frequently mentioned
-                'urgency': 7,   # Moderate urgency
+                'impact': 9,
+                'frequency': 8,
+                'urgency': 7,
                 'category': 'performance'
             },
             {
                 'name': 'Poor Customer Support',
                 'impact': 8,
                 'frequency': 6,
-                'urgency': 9,   # High urgency for customer retention
+                'urgency': 9,
                 'category': 'service'
             },
             {
@@ -248,44 +384,13 @@ def get_priority_matrix():
                 'frequency': 7,
                 'urgency': 5,
                 'category': 'usability'
-            },
-            {
-                'name': 'Limited Payment Options',
-                'impact': 6,
-                'frequency': 5,
-                'urgency': 4,
-                'category': 'features'
-            },
-            {
-                'name': 'High Pricing',
-                'impact': 8,
-                'frequency': 3,
-                'urgency': 3,
-                'category': 'pricing'
-            },
-            {
-                'name': 'Lack of Dark Mode',
-                'impact': 4,
-                'frequency': 6,
-                'urgency': 2,
-                'category': 'features'
-            },
-            {
-                'name': 'Spam Emails',
-                'impact': 5,
-                'frequency': 2,
-                'urgency': 6,
-                'category': 'communication'
             }
         ]
         
-        # You can enhance this with actual analysis of feedback data
-        # Count occurrences of issues in feedback messages
         feedbacks = Feedback.query.all()
         for feedback in feedbacks:
             text_lower = feedback.message.lower()
             
-            # Simple keyword matching to count issue frequency
             if any(word in text_lower for word in ['slow', 'loading', 'performance']):
                 for issue in priority_matrix:
                     if 'performance' in issue['name'].lower():
@@ -300,46 +405,11 @@ def get_priority_matrix():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-@app.route('/api/analytics/sentiment-trend')
-def get_sentiment_trend():
-    """Get sentiment trend over the last 7 days"""
-    try:
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=7)
-        
-        sentiment_trend = []
-        current_date = start_date
-        
-        while current_date <= end_date:
-            next_date = current_date + timedelta(days=1)
-            
-            daily_feedbacks = Feedback.query.filter(
-                Feedback.created_at >= current_date,
-                Feedback.created_at < next_date
-            ).all()
-            
-            positive = sum(1 for f in daily_feedbacks if f.sentiment == 'positive')
-            negative = sum(1 for f in daily_feedbacks if f.sentiment == 'negative')
-            neutral = sum(1 for f in daily_feedbacks if f.sentiment == 'neutral')
-            
-            sentiment_trend.append({
-                'date': current_date.strftime('%Y-%m-%d'),
-                'positive': positive,
-                'negative': negative,
-                'neutral': neutral,
-                'total': len(daily_feedbacks)
-            })
-            
-            current_date = next_date
-        
-        return jsonify(sentiment_trend)
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-# Add these new endpoints
 
 @app.route('/api/analytics/historical-trend')
-def get_historical_trend():
+@token_required
+@admin_required
+def get_historical_trend(current_user):
     """Get historical sentiment trend data"""
     try:
         return jsonify({
@@ -351,10 +421,11 @@ def get_historical_trend():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics/sentiment-meter')
-def get_sentiment_meter():
+@token_required
+@admin_required
+def get_sentiment_meter(current_user):
     """Get current sentiment meter data"""
     try:
-        # Calculate current sentiment percentages
         total_feedbacks = Feedback.query.count()
         if total_feedbacks == 0:
             return jsonify({'positive': 33, 'neutral': 34, 'negative': 33})
@@ -372,7 +443,9 @@ def get_sentiment_meter():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics/topic-sentiment')
-def get_topic_sentiment():
+@token_required
+@admin_required
+def get_topic_sentiment(current_user):
     """Get topic-sentiment correlation data"""
     try:
         return jsonify({
@@ -384,7 +457,9 @@ def get_topic_sentiment():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics/sentiment-intensity')
-def get_sentiment_intensity():
+@token_required
+@admin_required
+def get_sentiment_intensity(current_user):
     """Get sentiment intensity distribution"""
     try:
         return jsonify({
@@ -396,71 +471,11 @@ def get_sentiment_intensity():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-@app.route('/api/analytics/weekly-distribution')
-def get_weekly_distribution():
-    """Get feedback distribution by day of week"""
-    try:
-        # Get data from last 30 days
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
-        
-        weekly_data = {
-            'Monday': 0,
-            'Tuesday': 0,
-            'Wednesday': 0,
-            'Thursday': 0,
-            'Friday': 0,
-            'Saturday': 0,
-            'Sunday': 0
-        }
-        
-        feedbacks = Feedback.query.filter(
-            Feedback.created_at >= start_date,
-            Feedback.created_at <= end_date
-        ).all()
-        
-        for feedback in feedbacks:
-            day_name = feedback.created_at.strftime('%A')
-            weekly_data[day_name] += 1
-        
-        return jsonify(weekly_data)
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
-@app.route('/api/analytics/heatmap')
-def get_heatmap_data():
-    """Get heatmap data for the last 30 days"""
-    try:
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
-        
-        heatmap_data = []
-        current_date = start_date
-        
-        while current_date <= end_date:
-            next_date = current_date + timedelta(days=1)
-            
-            daily_count = Feedback.query.filter(
-                Feedback.created_at >= current_date,
-                Feedback.created_at < next_date
-            ).count()
-            
-            heatmap_data.append({
-                'date': current_date.strftime('%Y-%m-%d'),
-                'count': daily_count,
-                'day_of_week': current_date.strftime('%A'),
-                'week_number': current_date.isocalendar()[1]
-            })
-            
-            current_date = next_date
-        
-        return jsonify(heatmap_data)
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 @app.route('/api/wordcloud', methods=['GET'])
-def generate_wordcloud():
+@token_required
+@admin_required
+def generate_wordcloud(current_user):
     try:
         messages = [f.message for f in Feedback.query.all()]
         if not messages:
@@ -477,37 +492,8 @@ def generate_wordcloud():
         logger.error(f"Error generating wordcloud: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/feedback/<int:feedback_id>', methods=['DELETE'])
-def delete_feedback(feedback_id):
-    try:
-        feedback = Feedback.query.get_or_404(feedback_id)
-        db.session.delete(feedback)
-        db.session.commit()
-        logger.info(f"Feedback {feedback_id} deleted")
-        return jsonify({"message": "Feedback deleted successfully"})
-    except Exception as e:
-        logger.error(f"Error deleting feedback {feedback_id}: {e}")
-        return jsonify({"error": str(e)}), 500
+# ==================== STATS & EXPORT ROUTES ====================
 
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    try:
-        # Check database connection - fixed for SQLAlchemy 2.0+
-        from sqlalchemy import text
-        db.session.execute(text('SELECT 1'))
-        return jsonify({
-            "status": "healthy",
-            "database": "connected",
-            "timestamp": datetime.utcnow().isoformat()
-        })
-    except Exception as e:
-        return jsonify({
-            "status": "unhealthy", 
-            "database": "disconnected",
-            "error": str(e)
-        }), 500
-    
 @app.route('/api/feedback/stats', methods=['GET'])
 def get_feedback_stats():
     """Get detailed statistics for dashboard"""
@@ -517,7 +503,6 @@ def get_feedback_stats():
         negative_count = Feedback.query.filter_by(sentiment='negative').count()
         neutral_count = Feedback.query.filter_by(sentiment='neutral').count()
         
-        # Calculate percentages
         positive_percentage = (positive_count / total_feedbacks * 100) if total_feedbacks > 0 else 0
         negative_percentage = (negative_count / total_feedbacks * 100) if total_feedbacks > 0 else 0
         neutral_percentage = (neutral_count / total_feedbacks * 100) if total_feedbacks > 0 else 0
@@ -542,14 +527,135 @@ def get_feedback_stats():
         logger.error(f"Error fetching stats: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/export/csv', methods=['GET'])
+@token_required
+@admin_required
+def export_csv(current_user):
+    """Export all feedback as CSV"""
+    try:
+        feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).all()
+        
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        writer.writerow([
+            'ID', 'Name', 'Email', 'Category', 'Rating', 'Sentiment', 
+            'Polarity', 'Subjectivity', 'Analysis Method', 'Message', 'Created At'
+        ])
+        
+        for feedback in feedbacks:
+            writer.writerow([
+                feedback.id,
+                feedback.name or '',
+                feedback.email or '',
+                feedback.category,
+                feedback.rating,
+                feedback.sentiment,
+                f"{feedback.polarity:.3f}",
+                f"{feedback.subjectivity:.3f}",
+                feedback.analysis_method,
+                feedback.message.replace('\n', ' '),
+                feedback.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            ])
+        
+        response = make_response(output.getvalue())
+        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+        response.headers['Content-Disposition'] = f'attachment; filename=feedback_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"CSV export error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/export/json', methods=['GET'])
+@token_required
+@admin_required
+def export_json(current_user):
+    """Export all feedback as JSON"""
+    try:
+        feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).all()
+        
+        data = {
+            'export_date': datetime.now().isoformat(),
+            'total_feedbacks': len(feedbacks),
+            'feedbacks': [feedback.to_dict() for feedback in feedbacks]
+        }
+        
+        response = make_response(json.dumps(data, indent=2, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        response.headers['Content-Disposition'] = f'attachment; filename=feedback_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"JSON export error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# ==================== ADMIN ROUTES ====================
+
+@app.route('/api/admin/feedbacks', methods=['GET'])
+@token_required
+@admin_required
+def get_all_feedbacks_admin(current_user):
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        
+        feedbacks = Feedback.query.order_by(Feedback.created_at.desc())\
+            .paginate(page=page, per_page=per_page, error_out=False)
+        
+        feedback_list = [f.to_dict() for f in feedbacks.items]
+        
+        return jsonify({
+            "feedbacks": feedback_list,
+            "total": feedbacks.total,
+            "pages": feedbacks.pages,
+            "current_page": page
+        })
+    except Exception as e:
+        logger.error(f"Error fetching all feedbacks: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/users', methods=['GET'])
+@token_required
+@admin_required
+def get_all_users(current_user):
+    try:
+        users = User.query.all()
+        return jsonify({
+            "users": [user.to_dict() for user in users]
+        })
+    except Exception as e:
+        logger.error(f"Error fetching users: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# ==================== UTILITY ROUTES ====================
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    try:
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
+        return jsonify({
+            "status": "healthy",
+            "database": "connected",
+            "timestamp": datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "unhealthy", 
+            "database": "disconnected",
+            "error": str(e)
+        }), 500
+
 @app.route('/api/test-email', methods=['GET'])
 def test_email():
     """Test email configuration"""
     try:
         from email_notifier import send_negative_feedback_alert
-        from models import Feedback
         
-        # Create a test feedback object
         class TestFeedback:
             def __init__(self):
                 self.id = 999
@@ -567,102 +673,6 @@ def test_email():
         return jsonify({"success": result, "message": "Test email sent" if result else "Email failed"})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-    
-
-import csv
-import io
-import json
-from datetime import datetime
-from flask import Response, make_response
-
-@app.route('/api/export/csv', methods=['GET'])
-def export_csv():
-    """Export all feedback as CSV"""
-    try:
-        feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).all()
-        
-        # Create CSV in memory
-        output = io.StringIO()
-        writer = csv.writer(output)
-        
-        # Write header
-        writer.writerow([
-            'ID', 'Name', 'Email', 'Category', 'Rating', 'Sentiment', 
-            'Polarity', 'Subjectivity', 'Analysis Method', 'Message', 'Created At'
-        ])
-        
-        # Write data
-        for feedback in feedbacks:
-            writer.writerow([
-                feedback.id,
-                feedback.name or '',
-                feedback.email or '',
-                feedback.category,
-                feedback.rating,
-                feedback.sentiment,
-                f"{feedback.polarity:.3f}",
-                f"{feedback.subjectivity:.3f}",
-                feedback.analysis_method,
-                feedback.message.replace('\n', ' '),  # Remove newlines for CSV
-                feedback.created_at.strftime('%Y-%m-%d %H:%M:%S')
-            ])
-        
-        # Create response
-        response = make_response(output.getvalue())
-        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
-        response.headers['Content-Disposition'] = f'attachment; filename=feedback_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-        
-        return response
-        
-    except Exception as e:
-        logger.error(f"CSV export error: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/export/json', methods=['GET'])
-def export_json():
-    """Export all feedback as JSON"""
-    try:
-        feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).all()
-        
-        # Convert to list of dictionaries
-        data = {
-            'export_date': datetime.now().isoformat(),
-            'total_feedbacks': len(feedbacks),
-            'feedbacks': [feedback.to_dict() for feedback in feedbacks]
-        }
-        
-        # Create response with pretty JSON
-        response = make_response(json.dumps(data, indent=2, ensure_ascii=False))
-        response.headers['Content-Type'] = 'application/json; charset=utf-8'
-        response.headers['Content-Disposition'] = f'attachment; filename=feedback_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
-        
-        return response
-        
-    except Exception as e:
-        logger.error(f"JSON export error: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/export/pdf', methods=['GET'])
-def export_pdf():
-    """Export summary as PDF (basic text version)"""
-    try:
-        from io import BytesIO
-        
-        feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).all()
-        
-        # Generate simple text report (in real app, use reportlab or weasyprint)
-        report_content = generate_text_report(feedbacks)
-        
-        # For now, return as text file (PDF would require additional libraries)
-        response = make_response(report_content)
-        response.headers['Content-Type'] = 'text/plain; charset=utf-8'
-        response.headers['Content-Disposition'] = f'attachment; filename=feedback_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
-        
-        return response
-        
-    except Exception as e:
-        logger.error(f"PDF export error: {e}")
-        return jsonify({"error": str(e)}), 500
 
 def generate_text_report(feedbacks):
     """Generate a comprehensive text report"""
@@ -689,7 +699,7 @@ def generate_text_report(feedbacks):
     report.append("RECENT FEEDBACKS:")
     report.append("-" * 40)
     
-    for i, feedback in enumerate(feedbacks[:10], 1):  # Show last 10
+    for i, feedback in enumerate(feedbacks[:10], 1):
         report.append(f"{i}. [{feedback.sentiment.upper()}] ⭐{feedback.rating}/5 - {feedback.category}")
         report.append(f"   From: {feedback.name or 'Anonymous'}")
         report.append(f"   Date: {feedback.created_at.strftime('%Y-%m-%d %H:%M')}")
@@ -704,12 +714,3 @@ def generate_text_report(feedbacks):
 # ----------------- Run the app -----------------
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-from flask import send_from_directory
-
-@app.route('/')
-def serve_frontend():
-    return send_from_directory('frontend', 'index.html')
-
-@app.route('/<path:path>')
-def serve_static(path):
-    return send_from_directory('frontend', path)

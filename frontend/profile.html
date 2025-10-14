@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Feedback - Smart Feedback System</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="main-nav" id="mainNav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html">Feedback System</a>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <!-- Authenticated Links -->
+                <a href="index.html" class="nav-link auth-link">Home</a>
+                <a href="dashboard.html" class="nav-link auth-link admin-link">Dashboard</a>
+                <a href="profile.html" class="nav-link auth-link">My Feedback</a>
+                
+                <!-- User Menu -->
+                <div class="user-menu auth-link" id="userMenu">
+                    <span class="user-info">
+                        <span id="userEmail">User</span>
+                        <small id="userRole">Role</small>
+                    </span>
+                    <button id="logoutBtn" class="logout-btn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1>My Feedback History</h1>
+                <p>View and manage all your submitted feedback</p>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <section class="feedbacks-section">
+                <div class="section-header">
+                    <h2>Your Submissions</h2>
+                    <button onclick="loadUserFeedbacks()" class="btn-refresh">
+                        <span>🔄</span>
+                        Refresh
+                    </button>
+                </div>
+                <div id="userFeedbackTable" class="feedback-table">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p>Loading your feedback...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="dashboard-footer">
+            <div class="footer-actions">
+                <a href="index.html" class="btn btn-primary">
+                    <span>📝</span>
+                    Submit New Feedback
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete this feedback? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button onclick="closeDeleteModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="confirmDelete()" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/auth.js"></script>
+    <script>
+        class UserFeedbackManager {
+            constructor() {
+                this.pendingDeleteId = null;
+                this.init();
+            }
+
+            async init() {
+                // Check authentication
+                if (!window.authManager || !window.authManager.isLoggedIn()) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                await this.loadUserFeedbacks();
+            }
+
+            async loadUserFeedbacks() {
+                try {
+                    const response = await fetch('http://localhost:5000/api/user/feedback', {
+                        headers: window.authManager.getAuthHeaders()
+                    });
+
+                    if (response.status === 401) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        this.displayFeedbacks(data.feedbacks);
+                    } else {
+                        throw new Error(data.error || 'Failed to load feedbacks');
+                    }
+                } catch (error) {
+                    console.error('Error loading user feedbacks:', error);
+                    this.showError('Failed to load your feedbacks: ' + error.message);
+                }
+            }
+
+            displayFeedbacks(feedbacks) {
+                const container = document.getElementById('userFeedbackTable');
+                
+                if (!feedbacks || feedbacks.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <div class="no-data-icon">📝</div>
+                            <h3>No Feedback Yet</h3>
+                            <p>You haven't submitted any feedback yet. <a href="index.html">Submit your first feedback</a>!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const feedbacksHTML = feedbacks.map(feedback => `
+                    <div class="feedback-item ${feedback.sentiment}" data-feedback-id="${feedback.id}">
+                        <div class="feedback-header">
+                            <div class="feedback-meta">
+                                <span class="feedback-category">${this.escapeHtml(feedback.category)}</span>
+                                <span class="feedback-rating">${'★'.repeat(feedback.rating)}${'☆'.repeat(5 - feedback.rating)}</span>
+                                <span class="feedback-sentiment ${feedback.sentiment}">${feedback.sentiment}</span>
+                            </div>
+                            <div class="feedback-actions">
+                                <button onclick="userFeedbackManager.openDeleteModal(${feedback.id})" class="delete-btn">Delete</button>
+                            </div>
+                        </div>
+                        <div class="feedback-message">${this.escapeHtml(feedback.message)}</div>
+                        <div class="feedback-footer">
+                            <span class="feedback-date">${new Date(feedback.created_at).toLocaleDateString()}</span>
+                            <span class="feedback-stats">
+                                Polarity: ${feedback.polarity} • Subjectivity: ${feedback.subjectivity}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = feedbacksHTML;
+            }
+
+            openDeleteModal(feedbackId) {
+                this.pendingDeleteId = feedbackId;
+                document.getElementById('deleteModal').style.display = 'flex';
+            }
+
+            closeDeleteModal() {
+                document.getElementById('deleteModal').style.display = 'none';
+                this.pendingDeleteId = null;
+            }
+
+            async confirmDelete() {
+                const feedbackId = this.pendingDeleteId;
+                
+                if (!feedbackId) return;
+                
+                try {
+                    const response = await fetch(`http://localhost:5000/api/feedback/${feedbackId}`, {
+                        method: 'DELETE',
+                        headers: window.authManager.getAuthHeaders()
+                    });
+
+                    if (response.ok) {
+                        // Remove the feedback item from UI
+                        const feedbackElement = document.querySelector(`[data-feedback-id="${feedbackId}"]`);
+                        if (feedbackElement) {
+                            feedbackElement.style.opacity = '0.5';
+                            setTimeout(() => {
+                                feedbackElement.remove();
+                                
+                                // Check if no feedbacks left
+                                const remainingFeedbacks = document.querySelectorAll('.feedback-item').length;
+                                if (remainingFeedbacks === 0) {
+                                    this.displayFeedbacks([]);
+                                }
+                            }, 300);
+                        }
+                        
+                        this.closeDeleteModal();
+                        this.showMessage('Feedback deleted successfully', 'success');
+                    } else {
+                        const data = await response.json();
+                        throw new Error(data.error || 'Failed to delete feedback');
+                    }
+                } catch (error) {
+                    console.error('Error deleting feedback:', error);
+                    this.showMessage('Error deleting feedback: ' + error.message, 'error');
+                }
+            }
+
+            escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            showError(message) {
+                const container = document.getElementById('userFeedbackTable');
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">❌</div>
+                        <h3>Error Loading Feedbacks</h3>
+                        <p>${message}</p>
+                        <button onclick="loadUserFeedbacks()" class="btn btn-primary">Try Again</button>
+                    </div>
+                `;
+            }
+
+            showMessage(message, type) {
+                // Create a temporary message display
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `response-message ${type}`;
+                messageDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 1000;
+                    padding: 16px 20px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    animation: slideIn 0.3s ease;
+                `;
+                messageDiv.textContent = message;
+                
+                document.body.appendChild(messageDiv);
+                
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 3000);
+            }
+        }
+
+        // Global functions for HTML event handlers
+        function loadUserFeedbacks() {
+            if (window.userFeedbackManager) {
+                window.userFeedbackManager.loadUserFeedbacks();
+            }
+        }
+
+        function openDeleteModal(feedbackId) {
+            if (window.userFeedbackManager) {
+                window.userFeedbackManager.openDeleteModal(feedbackId);
+            }
+        }
+
+        function closeDeleteModal() {
+            if (window.userFeedbackManager) {
+                window.userFeedbackManager.closeDeleteModal();
+            }
+        }
+
+        function confirmDelete() {
+            if (window.userFeedbackManager) {
+                window.userFeedbackManager.confirmDelete();
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.userFeedbackManager = new UserFeedbackManager();
+        });
+    </script>
+</body>
+</html>

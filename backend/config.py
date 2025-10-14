@@ -5,6 +5,9 @@ import os
 load_dotenv()
 
 class Config:
+    # Security
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+    
     # Database
     DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///feedback.db")
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
@@ -18,7 +21,7 @@ class Config:
     MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER")
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
     MAIL_USE_TLS = True
-    MAIL_USE_SSL = False  # Make sure this is False
+    MAIL_USE_SSL = False
     
     # Hugging Face model for sentiment analysis
     HUGGINGFACE_MODEL = os.getenv("HUGGINGFACE_MODEL")
@@ -28,3 +31,7 @@ class Config:
     
     # Debug mode
     DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
+    
+    # Admin user (for initial setup)
+    ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@feedback.com")
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")

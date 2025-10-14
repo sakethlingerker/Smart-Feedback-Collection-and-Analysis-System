@@ -1,3 +1,124 @@
+/* ===== NAVIGATION STYLES ===== */
+.main-nav {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+}
+
+.nav-brand a {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Navigation Links */
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+/* User Menu */
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-info {
+    text-align: right;
+}
+
+.user-info small {
+    display: block;
+    opacity: 0.8;
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+.logout-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Authentication-based visibility */
+.guest-link {
+    display: none;
+}
+
+.auth-link {
+    display: none;
+}
+
+.admin-link {
+    display: none;
+}
+
+/* Show elements based on authentication state */
+body.guest .guest-link {
+    display: inline-block !important;
+}
+
+body.authenticated .auth-link {
+    display: inline-block !important;
+}
+
+body.admin .admin-link {
+    display: inline-block !important;
+}
+
+body.authenticated .user-menu {
+    display: flex !important;
+}
+
+/* Rest of your existing CSS remains the same */
 * {
     margin: 0;
     padding: 0;
@@ -386,7 +507,7 @@ input:focus, select:focus, textarea:focus {
     
     input, select, textarea {
         padding: 16px;
-        font-size: 16px; /* Prevent zoom on iOS */
+        font-size: 16px;
     }
     
     .rating-stars {
@@ -395,6 +516,19 @@ input:focus, select:focus, textarea:focus {
     
     .star {
         padding: 8px;
+    }
+
+    .nav-links {
+        gap: 10px;
+    }
+    
+    .nav-link {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .user-menu {
+        padding: 6px 12px;
     }
 }
 
@@ -416,6 +550,14 @@ input:focus, select:focus, textarea:focus {
         width: 100%;
         justify-content: center;
     }
+
+    .nav-container {
+        padding: 0 12px;
+    }
+    
+    .nav-links {
+        gap: 8px;
+    }
 }
 
 /* Touch device improvements */
@@ -433,6 +575,10 @@ input:focus, select:focus, textarea:focus {
     }
     
     .btn:hover {
+        transform: none;
+    }
+    
+    .nav-link:hover {
         transform: none;
     }
 }
