@@ -4,40 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Feedback System</title>
-    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="main-nav" id="mainNav">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <a href="index.html">Feedback System</a>
-            </div>
-            <div class="nav-links" id="navLinks">
-                <!-- Guest Links - Show when NOT logged in -->
-                <a href="index.html" class="nav-link guest-link">Home</a>
-                <a href="login.html" class="nav-link guest-link">Login</a>
-                <a href="register.html" class="nav-link guest-link">Register</a>
-                
-                <!-- Authenticated Links - Show when logged in -->
-                <a href="index.html" class="nav-link auth-link">Home</a>
-                <a href="dashboard.html" class="nav-link auth-link admin-link">Dashboard</a>
-                <a href="profile.html" class="nav-link auth-link">My Feedback</a>
-                
-                <!-- User Menu - Show when logged in -->
-                <div class="user-menu auth-link" id="userMenu">
-                    <span class="user-info">
-                        <span id="userEmail">User</span>
-                        <small id="userRole">Role</small>
-                    </span>
-                    <button id="logoutBtn" class="logout-btn">Logout</button>
-                </div>
+<nav class="main-nav" id="mainNav">
+    <div class="nav-container">
+        <div class="nav-brand">
+            <a href="{{ url_for('index') }}">Feedback System</a>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <!-- Guest Links - Show when NOT logged in -->
+            <a href="{{ url_for('index') }}" class="nav-link guest-link">Home</a>
+            <a href="{{ url_for('login_page') }}" class="nav-link guest-link">Login</a>
+            <a href="{{ url_for('register_page') }}" class="nav-link guest-link">Register</a>
+            
+            <!-- Authenticated Links - Show when logged in -->
+            <a href="{{ url_for('index') }}" class="nav-link auth-link">Home</a>
+            <a href="{{ url_for('dashboard_page') }}" class="nav-link auth-link admin-link">Dashboard</a>
+            <a href="{{ url_for('profile_page') }}" class="nav-link auth-link">My Feedback</a>
+            
+            <!-- User Menu - Show when logged in -->
+            <div class="user-menu auth-link" id="userMenu">
+                <span class="user-info">
+                    <span id="userEmail">User</span>
+                    <small id="userRole">Role</small>
+                </span>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <div class="container">
         <header>
@@ -158,20 +158,20 @@
         </footer>
     </div>
 
-    <script src="scripts/auth.js"></script>
-    <script src="scripts/main.js"></script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
-        function checkDashboardAccess() {
-            if (window.authManager && window.authManager.isLoggedIn() && window.authManager.isAdmin()) {
-                window.location.href = 'dashboard.html';
-            } else if (window.authManager && window.authManager.isLoggedIn()) {
-                alert('Admin access required for dashboard. Please login with an admin account.');
-                window.location.href = 'login.html';
-            } else {
-                alert('Please login to access the dashboard.');
-                window.location.href = 'login.html';
-            }
+    function checkDashboardAccess() {
+        if (window.authManager && window.authManager.isLoggedIn() && window.authManager.isAdmin()) {
+            window.location.href = "{{ url_for('dashboard_page') }}";
+        } else if (window.authManager && window.authManager.isLoggedIn()) {
+            alert('Admin access required for dashboard. Please login with an admin account.');
+            window.location.href = "{{ url_for('login_page') }}";
+        } else {
+            alert('Please login to access the dashboard.');
+            window.location.href = "{{ url_for('login_page') }}";
         }
-    </script>
+    }
+</script>
 </body>
 </html>

@@ -603,7 +603,7 @@ class EnhancedDashboard {
 
     async loadRecentFeedbacks() {
         try {
-            const response = await fetch("http://localhost:5000/api/feedback?per_page=10");
+            const response = await fetch("api/feedback?per_page=10");
 
             if (!response.ok) {
                 throw new Error("Failed to fetch recent feedbacks");
@@ -670,7 +670,7 @@ class EnhancedDashboard {
             if (imageElement) imageElement.style.display = 'none';
             if (topWordsElement) topWordsElement.innerHTML = '';
 
-            const response = await fetch('http://localhost:5000/api/wordcloud', {
+            const response = await fetch('/api/wordcloud', {
                 headers: window.authManager.getAuthHeaders()
             });
             
@@ -762,7 +762,7 @@ class EnhancedDashboard {
             
             console.log(`Exporting as ${format ? 'CSV' : 'JSON'}...`);
             
-            const response = await fetch(`http://localhost:5000${endpoint}`, {
+            const response = await fetch(`${endpoint}`, {
                 headers: window.authManager.getAuthHeaders()
             });
 
@@ -841,7 +841,7 @@ class EnhancedDashboard {
         if (!feedbackId) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/api/feedback/${feedbackId}`, {
+            const response = await fetch(`/api/feedback/${feedbackId}`, {
                 method: "DELETE",
                 headers: window.authManager.getAuthHeaders()
             });

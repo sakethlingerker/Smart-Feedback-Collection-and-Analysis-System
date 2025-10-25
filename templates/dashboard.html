@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Feedback Analytics Dashboard</title>
-  <link rel="stylesheet" href="styles/dashboard.css" />
-  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -17,13 +17,13 @@
   <nav class="main-nav" id="mainNav">
     <div class="nav-container">
       <div class="nav-brand">
-        <a href="index.html">Feedback System</a>
+        <a href="{{ url_for('index') }}">Feedback System</a>
       </div>
       <div class="nav-links" id="navLinks">
         <!-- Authenticated Links -->
-        <a href="index.html" class="nav-link auth-link">Home</a>
-        <a href="dashboard.html" class="nav-link auth-link admin-link">Dashboard</a>
-        <a href="profile.html" class="nav-link auth-link">My Feedback</a>
+        <a href="{{ url_for('index') }}" class="nav-link auth-link">Home</a>
+        <a href="{{ url_for('dashboard_page') }}" class="nav-link auth-link admin-link">Dashboard</a>
+        <a href="{{ url_for('profile_page') }}" class="nav-link auth-link">My Feedback</a>
         
         <!-- User Menu -->
         <div class="user-menu auth-link" id="userMenu">
@@ -158,7 +158,7 @@
       <section class="feedbacks-section">
         <div class="section-header">
           <h2>Recent Feedbacks</h2>
-          <button onclick="refreshDashboard()" class="btn btn-secondary">
+          <button onclick="refreshDashboard()" class="btn btn-primary">
             <span>🔄</span>
             Refresh
           </button>
@@ -174,7 +174,7 @@
 
     <footer class="dashboard-footer">
       <div class="footer-actions">
-        <a href="index.html" class="btn btn-primary">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
           <span>📝</span>
           Submit New Feedback
         </a>
@@ -197,12 +197,14 @@
       <div class="modal-actions">
         <button onclick="closeDeleteModal()" class="btn btn-secondary">Cancel</button>
         <button onclick="confirmDelete()" class="btn btn-danger">Delete</button>
+
       </div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script src="/scripts/auth.js"></script>
-  <script src="/scripts/dashboard.js"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
   <script>
     // Global flag to prevent multiple initializations
     let dashboardInitialized = false;
@@ -216,7 +218,7 @@
         }
 
         if (!window.authManager.isLoggedIn()) {
-            window.location.href = 'login.html';
+            window.location.href = '{{ url_for('index') }}';
             return;
         }
 
@@ -226,7 +228,7 @@
                     <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.1); border-radius: 12px; backdrop-filter: blur(10px);">
                         <h2 style="font-size: 2rem; margin-bottom: 20px;">🔒 Admin Access Required</h2>
                         <p style="font-size: 1.2rem; margin-bottom: 30px;">Please login with an admin account to access the dashboard.</p>
-                        <a href="index.html" style="background: white; color: #667eea; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">Return Home</a>
+                        <a href="{{ url_for('index') }}" style="background: white; color: #667eea; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">Return Home</a>
                     </div>
                 </div>
             `;

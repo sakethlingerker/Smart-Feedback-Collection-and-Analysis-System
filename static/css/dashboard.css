@@ -30,8 +30,7 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     line-height: 1.6;
     color: var(--text-primary);
-    background: var(--bg-secondary);
-    min-height: 100vh;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
 }
 
 .dashboard-container {
@@ -41,6 +40,10 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 /* Header */

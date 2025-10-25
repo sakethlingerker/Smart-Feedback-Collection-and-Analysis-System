@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login -Smart Feedback Collection and Analysis System</title>
-    <link rel="stylesheet" href="styles/main.css">
+    <title>Register - Smart Feedback Collection and Analysis System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,18 +14,18 @@
         <header>
             <div class="header-content">
                 <h1>Smart Feedback Collection and Analysis System</h1>
-                <p>Login to your account</p>
+                <p>Create your account</p>
             </div>
         </header>
 
         <main class="main-content">
             <div class="feedback-form-container">
                 <div class="form-header">
-                    <h2>Login</h2>
-                    <p>Access your feedback history and personalized features</p>
+                    <h2>Register</h2>
+                    <p>Join our feedback community and track your submissions</p>
                 </div>
 
-                <form id="loginForm" class="feedback-form">
+                <form id="registerForm" class="feedback-form">
                     <div class="form-group">
                         <label for="email">Email:</label>
                         <input type="email" id="email" name="email" placeholder="Enter your email" required>
@@ -33,22 +33,27 @@
 
                     <div class="form-group">
                         <label for="password">Password:</label>
-                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <input type="password" id="password" name="password" placeholder="Enter your password (min. 6 characters)" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password:</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="submit-btn" id="loginBtn">
-                            <span class="btn-text">Login</span>
+                        <button type="submit" class="submit-btn" id="registerBtn">
+                            <span class="btn-text">Register</span>
                             <span class="btn-loading" style="display: none;">
                                 <span class="loading-spinner"></span>
-                                Signing in...
+                                Creating account...
                             </span>
                         </button>
                     </div>
 
                     <div class="auth-links">
-                        <p>Don't have an account? <a href="register.html">Register here</a></p>
-                        <p><a href="index.html">← Back to home</a></p>
+                        <p>Already have an account? <a href="{{ url_for('login_page') }}l">Login here</a></p>
+                        <p><a href="{{ url_for('index') }}">← Back to home</a></p>
                     </div>
                 </form>
 
@@ -63,15 +68,42 @@
         </footer>
     </div>
 
-    <script src="scripts/auth.js"></script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const submitBtn = document.getElementById('loginBtn');
+    const submitBtn = document.getElementById('registerBtn');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnLoading = submitBtn.querySelector('.btn-loading');
     const responseMessage = document.getElementById('responseMessage');
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    // Basic validation
+    if (password !== confirmPassword) {
+        if (responseMessage) {
+            responseMessage.textContent = 'Passwords do not match!';
+            responseMessage.className = 'response-message error';
+            responseMessage.style.display = 'block';
+        } else {
+            alert('Passwords do not match!');
+        }
+        return;
+    }
+    
+    if (password.length < 6) {
+        if (responseMessage) {
+            responseMessage.textContent = 'Password must be at least 6 characters long!';
+            responseMessage.className = 'response-message error';
+            responseMessage.style.display = 'block';
+        } else {
+            alert('Password must be at least 6 characters long!');
+        }
+        return;
+    }
     
     submitBtn.disabled = true;
     btnText.style.display = 'none';
@@ -81,14 +113,11 @@
         responseMessage.style.display = 'none';
     }
     
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    const result = await window.authManager.login(email, password);
+    const result = await window.authManager.register(email, password);
     
     if (result.success) {
         if (responseMessage) {
-            responseMessage.textContent = 'Login successful! Redirecting...';
+            responseMessage.textContent = 'Registration successful! Redirecting...';
             responseMessage.className = 'response-message success';
             responseMessage.style.display = 'block';
         }
@@ -96,17 +125,11 @@
         // Redirect to appropriate page
         setTimeout(() => {
             if (result.user.role === 'admin') {
-                window.location.href = 'dashboard.html';
+                window.location.href = '{{ url_for('dashboard_page') }}';
             } else {
-                window.location.href = 'index.html';
+                window.location.href = '{{ url_for('index') }}';
             }
-        }, 1000);
-    } else {
-        if (responseMessage) {
-            responseMessage.textContent = result.error || 'Login failed';
-            responseMessage.className = 'response-message error';
-            responseMessage.style.display = 'block';
-        }
+        }, 1500);
     }
     
     submitBtn.disabled = false;

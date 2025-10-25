@@ -254,7 +254,7 @@ class SmartFeedbackSystem {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/feedback', {
+            const response = await fetch('/api/feedback', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -358,7 +358,7 @@ async submitFeedback() {
 
     try {
         // Use enhanced headers that include auth token if available
-        const response = await fetch('http://localhost:5000/api/feedback', {
+        const response = await fetch('/api/feedback', {
             method: 'POST',
             headers: this.getAuthHeaders(), // Updated line
             body: JSON.stringify(feedbackData)

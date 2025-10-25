@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 from models import db, Feedback, User
 from sentiment_analysis import analyze_sentiment
@@ -14,6 +14,7 @@ import csv
 import io
 import json
 from flask import Response, make_response
+import os
 
 # ----------------- Setup logging -----------------
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +26,9 @@ app.config.from_object(Config)
 
 # ----------------- Initialize extensions -----------------
 db.init_app(app)
-CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
+# Remove CORS or limit to same origin since we're serving everything from one app
+CORS(app)  # This will allow all origins, or you can remove it entirely for same-origin only
+
 init_email(app)
 
 # ----------------- Create database tables explicitly -----------------
@@ -33,9 +36,42 @@ with app.app_context():
     db.create_all()
     logger.info("Database tables created")
 
-# ----------------- Routes -----------------
+# ==================== FRONTEND ROUTES ====================
+
 @app.route('/')
-def home():
+def index():
+    """Serve the main feedback form"""
+    return render_template('index.html')
+
+@app.route('/login')
+def login_page():
+    """Serve the login page"""
+    return render_template('login.html')
+
+@app.route('/register')
+def register_page():
+    """Serve the registration page"""
+    return render_template('register.html')
+
+@app.route('/dashboard')
+def dashboard_page():
+    """Serve the admin dashboard"""
+    return render_template('dashboard.html')
+
+@app.route('/profile')
+def profile_page():
+    """Serve the user profile page"""
+    return render_template('profile.html')
+
+# Serve static files explicitly (though Flask does this automatically from static_folder)
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('static', path)
+
+# ==================== API ROUTES (Keep all existing API endpoints) ====================
+
+@app.route('/api/')
+def api_home():
     return jsonify({
         "message": "Smart Feedback System API", 
         "version": "2.0",
@@ -125,19 +161,6 @@ def login():
         logger.error(f"Login error: {e}")
         return jsonify({"error": "Login failed"}), 500
 
-@app.route('/api/auth/me', methods=['GET'])
-@token_required
-def get_current_user(current_user):
-    return jsonify({
-        "user": current_user.to_dict()
-    }), 200
-
-@app.route('/api/auth/logout', methods=['POST'])
-@token_required
-def logout(current_user):
-    # With JWT, logout is handled client-side by removing the token
-    return jsonify({"message": "Logout successful"}), 200
-
 # ==================== FEEDBACK ROUTES ====================
 
 @app.route('/api/feedback', methods=['POST'])
@@ -163,7 +186,7 @@ def submit_feedback(current_user):
             polarity=sentiment_result['polarity'],
             subjectivity=sentiment_result['subjectivity'],
             analysis_method=sentiment_result['method'],
-            user_id=current_user.id if current_user else None  # New field
+            user_id=current_user.id if current_user else None
         )
         db.session.add(feedback)
         db.session.commit()
@@ -711,6 +734,27 @@ def generate_text_report(feedbacks):
     
     return "\n".join(report)
 
+# ==================== ERROR HANDLERS ====================
+
+@app.errorhandler(404)
+def not_found(error):
+    """Handle 404 errors by serving index.html for SPA routing"""
+    if request.path.startswith('/api/'):
+        return jsonify({"error": "API endpoint not found"}), 404
+    return render_template('index.html')
+
+@app.errorhandler(500)
+def internal_error(error):
+    if request.path.startswith('/api/'):
+        return jsonify({"error": "Internal server error"}), 500
+    return render_template('index.html')
+
 # ----------------- Run the app -----------------
 if __name__ == '__main__':
+    # Create necessary directories if they don't exist
+    os.makedirs('templates', exist_ok=True)
+    os.makedirs('static/css', exist_ok=True)
+    os.makedirs('static/js', exist_ok=True)
+    os.makedirs('static/images', exist_ok=True)
+    
     app.run(debug=True, host='0.0.0.0', port=5000)
