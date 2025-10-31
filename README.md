@@ -1,87 +1,132 @@
-Smart Feedback Collection and Analysis System Build a full-stack web application that enables users to submit feedback through a responsive frontend interface, processes the input in the backend using sentiment analysis, stores the data in a structured database, and visualises the results using dynamic web-based charts. The system will demonstrate an integration of core web technologies including HTML, CSS, JavaScript, RESTful APIs, backend frameworks, and database management.
+# Smart Feedback Collection and Analysis System
 
-## Context
+![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen) ![Python](https://img.shields.io/badge/Python-3.8%2B-blue) ![Flask](https://img.shields.io/badge/Flask-2.3.3-lightgrey)
 
-Feedback is essential for improving services, products, and user experience. Traditional feedback systems often lack real-time analysis and visualization. By leveraging modern web technologies, REST APIs, and real-time data visualization—developers can create systems that not only collect user input but also process and display insights instantly. This project applies these principles to build a feedback system that operates entirely within a web-based architecture.
+A full‑stack web application to collect user feedback, run instant sentiment analysis, store results, and provide an administrator dashboard with visual analytics and export features.
 
-## Background
+---
 
-Web technologies like HTML, CSS, JavaScript, and backend frameworks (Node.js, Flask, etc.) enables the creation of dynamic and interactive applications. By integrating sentiment analysis and visualization tools, feedback can be transformed into actionable insights.
+## Quick summary
 
-## Step-by-step Approach to Develop the Project
+- Guests can submit anonymous feedback.
+- Registered users can submit feedback, view and manage their history.
+- Administrators access a dashboard with sentiment distribution, word clouds, priority matrix, exports, and email alerts for negative feedback.
+- Sentiment analysis uses TextBlob and NLTK VADER with fallback rules.
 
-1.  Define application structure: Define user roles and feedback types, Identify data fields and storage needs.
-2.  Design client server interaction: Design backend logic for storing and analyzing feedback. Plan frontend layout and user flow.
-3.  Full stack development: Build responsive UI using HTML, CSS & Javascript (or react).
-4.  Testing and validation: Perform unit, integration and UI testing.
+---
 
-## Tools and Technologies Requirements
+## Features
 
-*   **Front-End Environment**: HTML, CSS, JavaScript (or React)
-*   **Back-End Environment**: Python (Django/Flask) or Node.js
-*   **Database**: SQLite / MySQL / MongoDB
-*   **Tools**: VS Code, Postman, GitHub
-*   **Libraries & APIs**: Sentiment analysis API (e.g., TextBlob, VADER, or external APIs), Chart.js / D3.js
+- Real‑time sentiment analysis (TextBlob, VADER)
+- Role‑based access: Guest, Registered User, Admin
+- Dashboard: charts, trends, word clouds, live refresh
+- Data export: CSV / JSON
+- Email notifications for critical/negative feedback
+- SQLite by default (configurable to other RDBMS)
+- JWT authentication for APIs
 
-## Steps Explained in Detail
+---
 
-### Step 1 - Define application structure
+## Tech stack
 
-*   **Objective**: Define user roles and feedback types, identify data fields and storage needs.
-*   **User Roles**:
-    *   Guest: Can submit feedback anonymously.
-    *   Registered User: Can submit feedback and view their history.
-    *   Admin: Can view, analyze, and manage all feedback.
-*   **Feedback Types**:
-    *   Text-based feedback (e.g., product reviews, service comments)
+- Backend: Flask 2.3.3, Flask‑SQLAlchemy, Flask‑Mail
+- NLP: TextBlob, NLTK (VADER)
+- Frontend: HTML5, CSS3, JavaScript (ES6+), Chart.js
+- DB: SQLite (default)
+- Auth: JWT
 
-## Templates/Documents Required
+---
 
-Industry Project | Smart Feedback Collection and Analysis SystemI. Test Design document should have the following fields:
+## Quick start (Windows)
 
-1.  Test Case # (e.g. TC01)
-2.  Test Step # (e.g. 1)
-3.  Application /Screen (e.g. Feedback Submission Page)
-4.  Test Case (e.g. Verify if feedback is submitted and sentiment is analyzed)
-5.  Expected Result from the model (e.g. Sentiment result (Positive/Negative/Neutral) is returned)
-6.  Pre-Requisites (e.g. Server running, form accessible)
-7.  Input provided to the model (e.g. "The service was excellent!")
-8.  Iteration # NN (e.g. 1)
-9.  Cross-Validation Method (e.g. Check sentiment label and DB entry)
-10. Actual result(e.g. Sentiment returned as "Positive")
-11. Defect\[Y/N] (e.g. N)
+1. Clone and enter repo
+   ```
+   git clone https://github.com/sakethlingerker/Smart-Feedback-Collection-and-Analysis-System.git
+   cd "Smart Feedback Collection and Analysis System"
+   ```
+2. Create and activate venv
+   ```
+   python -m venv venv
+   venv\Scripts\activate
+   ```
+3. Install dependencies
+   ```
+   pip install -r requirements.txt
+   ```
+4. Initialize database and create default admin
+   ```
+   python init_db.py
+   ```
+5. Run the app
+   ```
+   python app.py
+   ```
+6. Open in browser: http://localhost:5000
 
-## Final Deliverables Required
+Default admin:
+- Email: admin@feedback.com
+- Password: admin123
 
-*   Fully functional smart feedback collection and analysis system
-*   Source code (frontend and backend), wireframes and documentation (architecture, logic, enhancements)
-*   Test design document, test cases, and scenarios
-*   Execution video demonstrating feedback submission and analysis
+---
 
-## Expected Project Outcomes
+## Usage overview
 
-*   Integration of sentiment analysis in web apps
-*   Improved user experience design and testing
-*   Understanding of full-stack web development
-*   Real-time data visualization skills
+- Guest feedback form: name (optional), email (optional), category, rating (1–5), message (min 10 chars) → analyzed and stored.
+- Registered users: register → login → feedback linked to account → view/delete own feedback.
+- Admins: login → dashboard → view all feedback, filter, export, receive alerts.
 
-## Hands on Environment or software required to deliver the project
+---
 
-*   **Hands-On Tools**:
-    *   HTML, CSS, JavaScript
-    *   Node.js / Flask
-    *   MongoDB / MySQL
-    *   Sentiment analysis API (e.g., TextBlob, VADER, or external APIs)
-    *   Chart.js / D3.js
-*   **Other Requirements**:
-    *   GitHub/Google Drive for sharing
-    *   Screen recording tool
-    *   Internet-enabled development environment
+## API (examples)
 
-## Reference Content
+- POST /api/auth/register — register user
+- POST /api/auth/login — obtain JWT
+- GET /api/auth/me — current user
+- POST /api/feedback — submit feedback
+- GET /api/user/feedback — user feedbacks
+- GET /api/feedback — all feedbacks (admin)
+- GET /api/analytics — dashboard metrics
+- GET /api/wordcloud — word cloud data
+- GET /api/export/csv, /api/export/json — data export
 
-*   [https://www.geeksforgeeks.org/design-a-feedback-form-using-html-and-css/](https://www.geeksforgeeks.org/design-a-feedback-form-using-html-and-css/)
-*   [https://dev.to/code\_2/building-a-comprehensive-customer-feedback-system-with-html-css-and-javascript-14h5](https://dev.to/code_2/building-a-comprehensive-customer-feedback-system-with-html-css-and-javascript-14h5)
-*   [https://www.geeksforgeeks.org/top-front-end-frameworks/](https://www.geeksforgeeks.org/top-front-end-frameworks/)
-*   [https://developer.mozilla.org/en-US/docs/Learn\_web\_development/Core/Frameworks\_libraries](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Frameworks_libraries)
+(Refer to backend routes for full request/response schemas.)
+
+---
+
+## Project structure (high level)
+
+- backend/ — Flask app, models, routes, NLP, mail helpers
+- frontend/ — HTML, CSS, JS, dashboard scripts
+- init_db.py — DB initialization and seed data
+- requirements.txt — Python deps
+- README.md — this file
+
+---
+
+## Development notes
+
+- Switch DB by updating DATABASE_URL in config or .env.
+- For production, serve via WSGI (Gunicorn) and configure environment variables for secret keys and mail.
+- Ensure NLTK VADER data is available (nltk.download('vader_lexicon')) when setting up.
+
+---
+
+## Testing
+
+- Add/execute unit tests for:
+  - Auth endpoints (JWT lifecycle)
+  - Feedback submit and storage
+  - Sentiment analysis output
+  - Export endpoints
+- Use the provided test design template for manual and automated cases.
+
+---
+
+## Contributing
+
+1. Fork the repo
+2. Create a feature branch
+3. Open a PR with a clear description and tests
+
+---
 

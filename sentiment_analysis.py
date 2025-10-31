@@ -5,16 +5,16 @@ import re
 import logging
 
 # Setup logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class FixedSentimentAnalyzer:
     def __init__(self):
+        self.sia = None
         try:
             self.sia = SentimentIntensityAnalyzer()
-            logger.info("NLTK VADER sentiment analyzer initialized successfully")
+            logger.info("✅ NLTK VADER sentiment analyzer initialized successfully")
         except Exception as e:
-            logger.warning(f"VADER initialization failed: {e}")
+            logger.warning(f"⚠️ VADER initialization failed: {e}")
             self.sia = None
     
     def analyze_with_textblob(self, text):
@@ -39,12 +39,13 @@ class FixedSentimentAnalyzer:
                 'method': 'textblob'
             }
         except Exception as e:
-            logger.error(f"TextBlob analysis failed: {e}")
+            logger.error(f"❌ TextBlob analysis failed: {e}")
             return self.fallback_analysis(text)
     
     def analyze_with_vader(self, text):
         """Analyze sentiment using VADER"""
         if not self.sia:
+            logger.warning("⚠️ VADER not available, falling back to TextBlob")
             return self.analyze_with_textblob(text)
         
         try:
@@ -66,13 +67,15 @@ class FixedSentimentAnalyzer:
                 'method': 'vader'
             }
         except Exception as e:
-            logger.error(f"VADER analysis failed: {e}")
+            logger.error(f"❌ VADER analysis failed: {e}")
             return self.analyze_with_textblob(text)
     
     def fallback_analysis(self, text):
         """Simple fallback sentiment analysis"""
-        positive_words = ['good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'awesome']
-        negative_words = ['bad', 'terrible', 'awful', 'horrible', 'poor', 'disappointing']
+        logger.warning("🔄 Using fallback keyword analysis")
+        
+        positive_words = ['good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'awesome', 'love', 'like', 'happy']
+        negative_words = ['bad', 'terrible', 'awful', 'horrible', 'poor', 'disappointing', 'hate', 'worst', 'angry']
         
         text_lower = text.lower()
         positive_count = sum(1 for word in positive_words if word in text_lower)
@@ -106,15 +109,24 @@ class FixedSentimentAnalyzer:
         """Main sentiment analysis method"""
         cleaned_text = self.clean_text(text)
         
+        # Log analysis attempt
+        logger.info(f"🔍 Analyzing text: '{cleaned_text[:50]}...'")
+        
         # Try VADER first, then TextBlob, then fallback
         try:
             if self.sia:
+                logger.info("🎯 Attempting VADER analysis...")
                 result = self.analyze_with_vader(cleaned_text)
             else:
+                logger.info("🎯 Attempting TextBlob analysis...")
                 result = self.analyze_with_textblob(cleaned_text)
+                
+            logger.info(f"✅ {result['method'].upper()} analysis completed")
+            
         except Exception as e:
-            logger.error(f"All sentiment analysis methods failed: {e}")
+            logger.error(f"❌ All sentiment analysis methods failed: {e}")
             result = self.fallback_analysis(cleaned_text)
+            logger.info("✅ Fallback analysis completed")
         
         result['cleaned_text'] = cleaned_text
         return result

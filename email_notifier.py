@@ -2,6 +2,7 @@ from flask_mail import Mail, Message
 from flask import current_app
 import logging
 
+
 logger = logging.getLogger(__name__)
 
 mail = Mail()
@@ -13,9 +14,15 @@ class EmailNotifier:
     def send_negative_feedback_alert(self, feedback):
         """Send email notification for negative feedback"""
         try:
+            logger.info("📧 Preparing email notification...")
+            
             # Check if email is configured
             if not current_app.config.get('MAIL_USERNAME') or not current_app.config.get('MAIL_PASSWORD'):
-                logger.warning("Email not configured. Skipping notification.")
+                logger.warning("⚠️ Email not configured. Skipping notification.")
+                return False
+                
+            if not current_app.config.get('ADMIN_EMAIL'):
+                logger.error("❌ Admin email not configured. Cannot send notification.")
                 return False
                 
             subject = f"🚨 Negative Feedback Alert - Sentiment: {feedback.sentiment}"
@@ -99,12 +106,16 @@ class EmailNotifier:
                 html=html_body
             )
             
+            logger.info(f"✉️ Sending email to: {current_app.config['ADMIN_EMAIL']}")
+            from smtplib import SMTP
+            SMTP.debuglevel = 0  # 🧹 Disable SMTP debug output completely
+
             self.mail.send(msg)
-            logger.info(f"Negative feedback alert sent for feedback ID: {feedback.id}")
+            logger.info(f"✅ Negative feedback alert sent successfully for feedback ID: {feedback.id}")
             return True
             
         except Exception as e:
-            logger.error(f"Failed to send email notification: {e}")
+            logger.error(f"❌ Failed to send email notification: {e}")
             return False
     
 
@@ -113,7 +124,20 @@ email_notifier = EmailNotifier()
 
 def init_email(app):
     """Initialize email extension"""
-    mail.init_app(app)
+    try:
+        mail.init_app(app)
+
+        # 🧹 Disable Flask-Mail internal SMTP debug output (even if Flask debug mode is on)
+        app.config['MAIL_DEBUG'] = False
+
+        # Optional: ensure SMTP debug is off globally
+        import smtplib
+        smtplib.SMTP.debuglevel = 0
+
+        app.logger.info("✅ Email service initialized successfully")
+    except Exception as e:
+        app.logger.error(f"❌ Failed to initialize email service: {e}")
+
 
 def send_negative_feedback_alert(feedback):
     """Convenience function to send negative feedback alert"""

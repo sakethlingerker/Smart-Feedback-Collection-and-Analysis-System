@@ -1,0 +1,18 @@
+ID,Name,Email,Category,Rating,Sentiment,Polarity,Subjectivity,Analysis Method,Message,Created At
+21,Anonymous,,website,3,negative,-0.585,0.558,vader,very bad in everything,2025-10-31 07:08:17
+20,Saketh Lingerker,,service,3,neutral,0.000,0.000,vader,"sare le , chala ne anukuntam",2025-10-31 06:54:54
+19,Anonymous,,product,1,negative,-0.494,0.551,vader,"Terrible experience. The product broke immediately and support was unhelpful.""",2025-10-25 15:00:43
+18,Test User,,product,5,positive,0.572,0.787,vader,Excellent Service,2025-10-25 14:57:13
+17,akhila,akhilalingerker@gmail.com,product,2,negative,-0.782,0.632,vader,"very bad product, waste of money",2025-10-25 10:45:01
+16,Anonymous,,service,3,positive,0.740,0.676,vader,working very good and satisfied,2025-10-18 08:54:07
+15,screenAccount,,website,1,negative,-0.637,0.193,vader,"The app is very slow and crashes frequently. The user interface is confusing, and it’s hard to find the features I need. Overall, it feels unreliable and frustrating to use.",2025-10-18 06:32:33
+14,Anonymous,,service,3,negative,-0.612,0.444,vader,"neutral feedback from me, highly negative",2025-10-18 06:25:36
+13,Anonymous,,product,3,positive,0.992,0.300,vader,"I recently used the Smart Feedback Collection and Analysis System, and I have to say, I’m really impressed with how intuitive and smooth the entire process was. The interface is clean, minimalistic, and super easy to navigate — even for someone who isn’t very tech-savvy. I liked how the system immediately acknowledged my input and gave real-time sentiment feedback; that made the experience feel dynamic and responsive.  However, I think there’s still room for a few improvements. For example, it would be great if users could see a short summary or visualization (like a WordCloud or sentiment trend graph) after submitting their feedback. It would also be cool if the system provided suggestions for improvement or follow-up actions based on the detected sentiment.  Overall, this is an excellent AI-driven feedback platform. It’s efficient, intelligent, and definitely ahead of most traditional systems.",2025-10-18 05:13:43
+12,Anonymous,,product,3,positive,0.840,0.727,vader,Great product! 😊 Loved the features ❤️,2025-10-18 05:10:48
+9,ashwin,2111cs030016@mallareddyuniversity.ac.in,support,1,neutral,0.000,0.000,vader,not as expected,2025-10-14 19:25:00
+3,Carol Davis,carol@test.com,website,2,positive,0.061,0.324,vader,The website is very slow and difficult to navigate. Needs improvement in user experience.,2025-10-14 12:41:07
+4,David Wilson,david@test.com,support,5,positive,0.802,0.451,vader,Excellent customer support! They went above and beyond to solve my issue quickly.,2025-10-14 09:41:07
+5,Eva Brown,eva@test.com,general,3,positive,0.568,0.386,vader,"It's okay, nothing special. Does the job but could be better with more features.",2025-10-14 06:41:07
+6,Frank Miller,frank@test.com,product,1,negative,-0.836,0.498,vader,"Terrible product! Stopped working after 2 days. Waste of money, would not recommend to anyone.",2025-10-14 03:41:07
+7,Grace Lee,grace@test.com,service,5,positive,0.883,0.507,vader,"Outstanding service! The team was professional, efficient, and very friendly. Exceeded all expectations!",2025-10-14 00:41:07
+8,Henry Taylor,henry@test.com,website,4,positive,0.869,0.495,vader,Nice website design and easy to use. The mobile version works great too.,2025-10-13 21:41:07
