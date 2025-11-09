@@ -267,7 +267,7 @@ class SmartFeedbackSystem {
             if (response.ok) {
                 const sentimentBadge = `<span class="sentiment-badge ${result.sentiment}">${result.sentiment}</span>`;
                 this.showMessage(
-                    `✅ Feedback submitted successfully! Sentiment: ${result.sentiment} (Polarity: ${result.polarity})`, 
+                    `Feedback submitted successfully! Sentiment: ${result.sentiment} (Polarity: ${result.polarity})`, 
                     'success'
                 );
                 
@@ -281,7 +281,7 @@ class SmartFeedbackSystem {
                 // Show analysis method info
                 setTimeout(() => {
                     this.showMessage(
-                        `🤖 Analysis performed using: ${result.analysis_method}`, 
+                        ` Analysis performed using: ${result.analysis_method}`, 
                         'info'
                     );
                 }, 3000);
@@ -291,7 +291,7 @@ class SmartFeedbackSystem {
             }
         } catch (error) {
             console.error('Submission error:', error);
-            this.showMessage(`❌ Error: ${error.message}`, 'error');
+            this.showMessage(`Error: ${error.message}`, 'error');
         } finally {
             this.isSubmitting = false;
             submitBtn.disabled = false;
@@ -367,7 +367,7 @@ async submitFeedback() {
         const result = await response.json();
 
         if (response.ok) {
-            let successMessage = `✅ Feedback submitted successfully! Sentiment: ${result.sentiment} (Polarity: ${result.polarity})`;
+            let successMessage = `Feedback submitted successfully! Sentiment: ${result.sentiment} (Polarity: ${result.polarity})`;
             
             // Add user context to message
             if (window.authManager && window.authManager.isLoggedIn()) {
@@ -388,7 +388,7 @@ async submitFeedback() {
             // Show analysis method info
             setTimeout(() => {
                 this.showMessage(
-                    `🤖 Analysis performed using: ${result.analysis_method}`, 
+                    `Analysis performed using: ${result.analysis_method}`, 
                     'info'
                 );
             }, 3000);
@@ -398,7 +398,7 @@ async submitFeedback() {
         }
     } catch (error) {
         console.error('Submission error:', error);
-        this.showMessage(`❌ Error: ${error.message}`, 'error');
+        this.showMessage(`Error: ${error.message}`, 'error');
     } finally {
         this.isSubmitting = false;
         submitBtn.disabled = false;

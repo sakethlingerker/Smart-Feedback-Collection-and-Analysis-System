@@ -14,15 +14,15 @@ class EmailNotifier:
     def send_negative_feedback_alert(self, feedback):
         """Send email notification for negative feedback"""
         try:
-            logger.info("📧 Preparing email notification...")
+            logger.info(" Preparing email notification...")
             
             # Check if email is configured
             if not current_app.config.get('MAIL_USERNAME') or not current_app.config.get('MAIL_PASSWORD'):
-                logger.warning("⚠️ Email not configured. Skipping notification.")
+                logger.warning(" Email not configured. Skipping notification.")
                 return False
                 
             if not current_app.config.get('ADMIN_EMAIL'):
-                logger.error("❌ Admin email not configured. Cannot send notification.")
+                logger.error(" Admin email not configured. Cannot send notification.")
                 return False
                 
             subject = f"🚨 Negative Feedback Alert - Sentiment: {feedback.sentiment}"
@@ -106,16 +106,16 @@ class EmailNotifier:
                 html=html_body
             )
             
-            logger.info(f"✉️ Sending email to: {current_app.config['ADMIN_EMAIL']}")
+            logger.info(f" Sending email to: {current_app.config['ADMIN_EMAIL']}")
             from smtplib import SMTP
             SMTP.debuglevel = 0  # 🧹 Disable SMTP debug output completely
 
             self.mail.send(msg)
-            logger.info(f"✅ Negative feedback alert sent successfully for feedback ID: {feedback.id}")
+            logger.info(f" Negative feedback alert sent successfully for feedback ID: {feedback.id}")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Failed to send email notification: {e}")
+            logger.error(f" Failed to send email notification: {e}")
             return False
     
 
@@ -134,9 +134,9 @@ def init_email(app):
         import smtplib
         smtplib.SMTP.debuglevel = 0
 
-        app.logger.info("✅ Email service initialized successfully")
+        app.logger.info(" Email service initialized successfully")
     except Exception as e:
-        app.logger.error(f"❌ Failed to initialize email service: {e}")
+        app.logger.error(f" Failed to initialize email service: {e}")
 
 
 def send_negative_feedback_alert(feedback):

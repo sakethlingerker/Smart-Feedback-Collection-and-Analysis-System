@@ -679,7 +679,7 @@ class EnhancedDashboard {
                 if (loadingElement) {
                     loadingElement.innerHTML = `
                         <div style="color: #f59e0b;">
-                            <p>⚠️ WordCloud requires admin privileges</p>
+                            <p> WordCloud requires admin privileges</p>
                         </div>
                     `;
                 }
@@ -776,11 +776,11 @@ class EnhancedDashboard {
             const data = await response.text();
             this.downloadFile(data, filename, format ? 'text/csv' : 'application/json');
             
-            this.showToast(`✅ ${filename} downloaded successfully!`, 'success');
+            this.showToast(` ${filename} downloaded successfully!`, 'success');
             
         } catch (error) {
             console.error("Export error:", error);
-            this.showToast(`❌ Export failed: ${error.message}`, 'error');
+            this.showToast(` Export failed: ${error.message}`, 'error');
         }
     }
 

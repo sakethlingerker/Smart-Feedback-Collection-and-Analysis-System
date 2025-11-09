@@ -19,7 +19,6 @@ from flask import Response, make_response
 import os
 
 # ----------------- Custom Logging Setup -----------------
-# Remove all existing handlers
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 
@@ -44,13 +43,13 @@ logging.getLogger('werkzeug').setLevel(logging.WARNING)
 def print_startup_banner():
     banner = """
 ============================================================
-🚀 Starting Smart Feedback Analysis System...
+ Starting Smart Feedback Analysis System...
 ============================================================
-✅ Environment validation passed
-✅ Database connection established successfully  
-✅ JWT authentication middleware active
-✅ Sentiment analysis engines initialized
-✅ All systems ready for operation
+ Environment validation passed
+ Database connection established successfully  
+ JWT authentication middleware active
+ Sentiment analysis engines initialized
+ All systems ready for operation
 ============================================================
     """
     print(banner)
@@ -121,12 +120,12 @@ def api_home():
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     try:
-        logger.info("\n🔐 User Authentication Flow:")
+        logger.info("\n User Authentication Flow:")
         data = request.get_json()
         
         # Validation
         if not data or not data.get('email') or not data.get('password'):
-            logger.error("❌ Registration failed: Email and password required")
+            logger.error("  Registration failed: Email and password required")
             return jsonify({"error": "Email and password are required"}), 400
         
         # Validate email
@@ -134,17 +133,17 @@ def register():
             valid = validate_email(data['email'])
             email = valid.email
         except EmailNotValidError as e:
-            logger.error(f"❌ Registration failed: Invalid email address")
+            logger.error(f"  Registration failed: Invalid email address")
             return jsonify({"error": "Invalid email address"}), 400
         
         # Check if user already exists
         if User.query.filter_by(email=email).first():
-            logger.error(f"❌ Registration failed: User already exists")
+            logger.error(f"  Registration failed: User already exists")
             return jsonify({"error": "User already exists"}), 409
         
         # Password strength check
         if len(data['password']) < 6:
-            logger.error("❌ Registration failed: Password too short")
+            logger.error("  Registration failed: Password too short")
             return jsonify({"error": "Password must be at least 6 characters"}), 400
         
         # Create user
@@ -161,8 +160,8 @@ def register():
         # Generate token
         token = user.generate_auth_token()
         
-        logger.info(f"✅ User registration successful - {email}")
-        logger.info(f"✅ Role assigned: {user.role}")
+        logger.info(f" User registration successful - {email}")
+        logger.info(f" Role assigned: {user.role}")
         
         return jsonify({
             "message": "User registered successfully",
@@ -171,7 +170,7 @@ def register():
         }), 201
         
     except Exception as e:
-        logger.error(f"❌ Registration error: {e}")
+        logger.error(f"  Registration error: {e}")
         return jsonify({"error": "Registration failed"}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -180,23 +179,23 @@ def login():
         data = request.get_json()
         
         if not data or not data.get('email') or not data.get('password'):
-            logger.error("❌ Login failed: Email and password required")
+            logger.error("  Login failed: Email and password required")
             return jsonify({"error": "Email and password are required"}), 400
         
         user = User.query.filter_by(email=data['email']).first()
         
         if not user or not user.check_password(data['password']):
-            logger.error("❌ Login failed: Invalid credentials")
+            logger.error("  Login failed: Invalid credentials")
             return jsonify({"error": "Invalid email or password"}), 401
         
         if not user.is_active:
-            logger.error("❌ Login failed: Account deactivated")
+            logger.error("  Login failed: Account deactivated")
             return jsonify({"error": "Account is deactivated"}), 401
         
         token = user.generate_auth_token()
         
-        logger.info("✅ Login authentication completed - JWT token generated")
-        logger.info("✅ Role-based access control verified")
+        logger.info(" Login authentication completed - JWT token generated")
+        logger.info(" Role-based access control verified")
         
         return jsonify({
             "message": "Login successful",
@@ -205,7 +204,7 @@ def login():
         }), 200
         
     except Exception as e:
-        logger.error(f"❌ Login error: {e}")
+        logger.error(f"  Login error: {e}")
         return jsonify({"error": "Login failed"}), 500
 
 # ==================== FEEDBACK ROUTES ====================
@@ -216,12 +215,12 @@ def submit_feedback(current_user):
     start_time = time.time()
     
     try:
-        logger.info("\n📥 Feedback Processing Pipeline:")
+        logger.info("\n Feedback Processing Pipeline:")
         logger.info("Step 1: Received feedback submission")
         
         data = request.get_json()
         if not data or not data.get('message'):
-            logger.error("❌ Validation failed: Empty message")
+            logger.error("  Validation failed: Empty message")
             return jsonify({"error": "Feedback message is required"}), 400
 
         logger.info("Step 2: Input validation and sanitization completed")
@@ -276,12 +275,12 @@ def submit_feedback(current_user):
             response_data["message"] += " - Submitted anonymously"
 
         processing_time = time.time() - start_time
-        logger.info(f"\n⏱️ System completed processing in {processing_time:.2f} seconds!")
+        logger.info(f"\n System completed processing in {processing_time:.2f} seconds!")
 
         return jsonify(response_data), 201
 
     except Exception as e:
-        logger.error(f"❌ Error submitting feedback: {e}")
+        logger.error(f"  Error submitting feedback: {e}")
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
@@ -302,7 +301,7 @@ def get_all_feedback():
             "current_page": page
         })
     except Exception as e:
-        logger.error(f"❌ Error fetching feedbacks: {e}")
+        logger.error(f"  Error fetching feedbacks: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/user/feedback', methods=['GET'])
@@ -329,7 +328,7 @@ def get_user_feedback(current_user):
             "current_page": page
         })
     except Exception as e:
-        logger.error(f"❌ Error fetching user feedbacks: {e}")
+        logger.error(f"  Error fetching user feedbacks: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/feedback/<int:feedback_id>', methods=['DELETE'])
@@ -338,10 +337,10 @@ def delete_feedback(feedback_id):
         feedback = Feedback.query.get_or_404(feedback_id)
         db.session.delete(feedback)
         db.session.commit()
-        logger.info(f"✅ Feedback {feedback_id} deleted successfully")
+        logger.info(f" Feedback {feedback_id} deleted successfully")
         return jsonify({"message": "Feedback deleted successfully"})
     except Exception as e:
-        logger.error(f"❌ Error deleting feedback {feedback_id}: {e}")
+        logger.error(f"  Error deleting feedback {feedback_id}: {e}")
         return jsonify({"error": str(e)}), 500
 
 # ==================== ANALYTICS ROUTES ====================
@@ -351,7 +350,7 @@ def delete_feedback(feedback_id):
 @admin_required
 def get_analytics(current_user):
     try:
-        logger.info("\n📊 Dashboard Analytics:")
+        logger.info("\n Dashboard Analytics:")
         
         sentiment_stats = db.session.query(
             Feedback.sentiment, db.func.count(Feedback.id)
@@ -392,11 +391,11 @@ def get_analytics(current_user):
             negative_pct = (negative / total_feedbacks) * 100
             neutral_pct = (neutral / total_feedbacks) * 100
             
-            logger.info(f"✅ Sentiment distribution: Positive ({positive_pct:.0f}%), Negative ({negative_pct:.0f}%), Neutral ({neutral_pct:.0f}%)")
+            logger.info(f" Sentiment distribution: Positive ({positive_pct:.0f}%), Negative ({negative_pct:.0f}%), Neutral ({neutral_pct:.0f}%)")
         
-        logger.info("✅ Real-time charts updated")
-        logger.info("✅ WordCloud generation completed")
-        logger.info("✅ Data export functionality verified")
+        logger.info(" Real-time charts updated")
+        logger.info(" WordCloud generation completed")
+        logger.info(" Data export functionality verified")
 
         return jsonify({
             "sentiment_distribution": dict(sentiment_stats),
@@ -413,7 +412,7 @@ def get_analytics(current_user):
             "user_feedback_count": Feedback.query.filter_by(user_id=current_user.id).count()
         })
     except Exception as e:
-        logger.error(f"❌ Error fetching analytics: {e}")
+        logger.error(f"  Error fetching analytics: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/analytics/emotion-distribution')
@@ -458,7 +457,7 @@ def get_emotion_distribution(current_user):
         return jsonify(emotions)
         
     except Exception as e:
-        logger.error(f"❌ Error fetching emotion distribution: {e}")
+        logger.error(f"  Error fetching emotion distribution: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics/priority-matrix')
@@ -515,7 +514,7 @@ def get_priority_matrix(current_user):
         return jsonify(priority_matrix)
         
     except Exception as e:
-        logger.error(f"❌ Error fetching priority matrix: {e}")
+        logger.error(f"  Error fetching priority matrix: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics/historical-trend')
@@ -530,7 +529,7 @@ def get_historical_trend(current_user):
             'previous': [58, 64, 62, 60]
         })
     except Exception as e:
-        logger.error(f"❌ Error fetching historical trend: {e}")
+        logger.error(f"  Error fetching historical trend: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics/sentiment-meter')
@@ -553,7 +552,7 @@ def get_sentiment_meter(current_user):
             'negative': round((negative / total_feedbacks) * 100)
         })
     except Exception as e:
-        logger.error(f"❌ Error fetching sentiment meter: {e}")
+        logger.error(f"  Error fetching sentiment meter: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics/topic-sentiment')
@@ -568,7 +567,7 @@ def get_topic_sentiment(current_user):
             'negative': [15, 35, 50, 25, 10]
         })
     except Exception as e:
-        logger.error(f"❌ Error fetching topic sentiment: {e}")
+        logger.error(f"  Error fetching topic sentiment: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analytics/sentiment-intensity')
@@ -585,7 +584,7 @@ def get_sentiment_intensity(current_user):
             'strong_negative': 10
         })
     except Exception as e:
-        logger.error(f"❌ Error fetching sentiment intensity: {e}")
+        logger.error(f"  Error fetching sentiment intensity: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/wordcloud', methods=['GET'])
@@ -605,7 +604,7 @@ def generate_wordcloud(current_user):
             "top_words": [{"word": word, "count": count} for word, count in top_words]
         })
     except Exception as e:
-        logger.error(f"❌ Error generating wordcloud: {e}")
+        logger.error(f" Error generating wordcloud: {e}")
         return jsonify({"error": str(e)}), 500
 
 # ==================== STATS & EXPORT ROUTES ====================
@@ -640,7 +639,7 @@ def get_feedback_stats():
         })
         
     except Exception as e:
-        logger.error(f"❌ Error fetching stats: {e}")
+        logger.error(f" Error fetching stats: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/export/csv', methods=['GET'])
@@ -678,11 +677,11 @@ def export_csv(current_user):
         response.headers['Content-Type'] = 'text/csv; charset=utf-8'
         response.headers['Content-Disposition'] = f'attachment; filename=feedback_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
         
-        logger.info("✅ CSV export completed successfully")
+        logger.info(" CSV export completed successfully")
         return response
         
     except Exception as e:
-        logger.error(f"❌ CSV export error: {e}")
+        logger.error(f" CSV export error: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/export/json', methods=['GET'])
@@ -703,11 +702,11 @@ def export_json(current_user):
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         response.headers['Content-Disposition'] = f'attachment; filename=feedback_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
         
-        logger.info("✅ JSON export completed successfully")
+        logger.info(" JSON export completed successfully")
         return response
         
     except Exception as e:
-        logger.error(f"❌ JSON export error: {e}")
+        logger.error(f" JSON export error: {e}")
         return jsonify({"error": str(e)}), 500
 
 # ==================== ADMIN ROUTES ====================
@@ -732,7 +731,7 @@ def get_all_feedbacks_admin(current_user):
             "current_page": page
         })
     except Exception as e:
-        logger.error(f"❌ Error fetching all feedbacks: {e}")
+        logger.error(f" Error fetching all feedbacks: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/admin/users', methods=['GET'])
@@ -745,7 +744,7 @@ def get_all_users(current_user):
             "users": [user.to_dict() for user in users]
         })
     except Exception as e:
-        logger.error(f"❌ Error fetching users: {e}")
+        logger.error(f" Error fetching users: {e}")
         return jsonify({"error": str(e)}), 500
 
 # ==================== UTILITY ROUTES ====================
@@ -788,10 +787,10 @@ def test_email():
                 self.created_at = datetime.utcnow()
         
         result = send_negative_feedback_alert(TestFeedback())
-        logger.info("✅ Test email sent successfully")
+        logger.info(" Test email sent successfully")
         return jsonify({"success": result, "message": "Test email sent" if result else "Email failed"})
     except Exception as e:
-        logger.error(f"❌ Test email failed: {e}")
+        logger.error(f" Test email failed: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 def generate_text_report(feedbacks):
@@ -837,13 +836,13 @@ def generate_text_report(feedbacks):
 def not_found(error):
     """Handle 404 errors by serving index.html for SPA routing"""
     if request.path.startswith('/api/'):
-        logger.error(f"❌ API endpoint not found: {request.path}")
+        logger.error(f"API endpoint not found: {request.path}")
         return jsonify({"error": "API endpoint not found"}), 404
     return render_template('index.html')
 
 @app.errorhandler(500)
 def internal_error(error):
-    logger.error(f"❌ Internal server error: {error}")
+    logger.error(f"Internal server error: {error}")
     if request.path.startswith('/api/'):
         return jsonify({"error": "Internal server error"}), 500
     return render_template('index.html')
@@ -852,7 +851,7 @@ def internal_error(error):
 if __name__ == '__main__':
     # Print startup banner
     print_startup_banner()
-    
+    print("... open link http://localhost:5000/")
     # Create necessary directories if they don't exist
     os.makedirs('templates', exist_ok=True)
     os.makedirs('static/css', exist_ok=True)

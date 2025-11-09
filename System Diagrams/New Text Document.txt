@@ -1,0 +1,138 @@
+```mermaid
+flowchart TB
+    User[User Browser<br/>HTML/CSS/JavaScript] -->|HTTP POST| Flask[Flask Application<br/>Python]
+  
+    Flask --> Auth[Authentication<br/>JWT Middleware]
+    Flask --> SA[Sentiment Analysis<br/>Multi-Model Engine]
+    Flask --> DB[(SQLite Database<br/>SQLAlchemy ORM)]
+  
+    SA --> HF[HuggingFace<br/>Transformers]
+    SA --> TB[TextBlob<br/>Rule-based]
+    SA --> Vader[VADER<br/>NLTK]
+  
+    Flask -->|Negative Feedback| Email[Email Service<br/>SMTP]
+    Flask -->|Analytics Data| Dashboard[Admin Dashboard<br/>Chart.js]
+  
+    Dashboard -->|REST API| Flask
+  
+    style User fill:#e1f5fe
+    style Flask fill:#f3e5f5
+    style SA fill:#e8f5e8
+    style DB fill:#fff3e0
+```
+
+# System Architecture Diagram
+
+## High-Level Overview
+
+```mermaid
+graph TB
+    Client[Client Browser<br/>JavaScript/HTML/CSS] -->|REST API| Flask[Flask Backend<br/>Python]
+  
+    Flask --> Auth[Auth Service<br/>JWT Tokens]
+    Flask --> Analysis[Sentiment Analysis<br/>Multi-Model]
+    Flask --> DB[(Database<br/>SQLite)]
+    Flask --> Notify[Notification Service]
+  
+    Analysis --> HF[HuggingFace AI]
+    Analysis --> TB[TextBlob]
+  
+    Notify --> Email[Email Alerts<br/>SMTP]
+  
+    DB --> Users[Users Table]
+    DB --> Feedback[Feedback Table]
+  
+    classDef frontend fill:#bbdefb
+    classDef backend fill:#c8e6c9
+    classDef database fill:#ffecb3
+    classDef external fill:#f8bbd9
+  
+    class Client frontend
+    class Flask,Auth,Analysis,Notify backend
+    class DB,Users,Feedback database
+    class HF,TB,Email external
+```
+
+# System Architecture
+
+## Overview
+
+The Smart Feedback System follows a **three-tier architecture** with clear separation between presentation, business logic, and data layers.
+
+```mermaid
+flowchart LR
+    subgraph Frontend
+        UI[Web Interface<br/>Vanilla JS]
+        Dashboard[Admin Dashboard<br/>Chart.js]
+    end
+  
+    subgraph Backend
+        API[Flask REST API<br/>Python]
+        Auth[JWT Authentication]
+        SA[Sentiment Analysis Engine]
+    end
+  
+    subgraph Data
+        DB[(SQLite Database)]
+    end
+  
+    subgraph External
+        HF[HuggingFace API]
+        SMTP[Email Service]
+    end
+  
+    UI --> API
+    Dashboard --> API
+    API --> Auth
+    API --> SA
+    API --> DB
+    SA --> HF
+    API --> SMTP
+```
+
+
+```mermaid
+flowchart TB
+    %% ===== USER INTERACTION FLOW =====
+    User[End User] -->|Submit Feedback| WebApp[Web Application<br/>HTML/CSS/JS]
+    Admin[Administrator] -->|View Analytics| Dashboard[Admin Dashboard<br/>Chart.js]
+  
+    %% ===== BACKEND PROCESSING =====
+    WebApp -->|REST API Calls| FlaskApp[Flask Application<br/>Python]
+    Dashboard -->|REST API Calls| FlaskApp
+  
+    FlaskApp --> Auth[Authentication<br/>JWT Tokens]
+    FlaskApp --> Analysis[Sentiment Analysis Engine]
+    FlaskApp --> DB[(SQLite Database<br/>SQLAlchemy)]
+  
+    %% ===== CORRECTED SENTIMENT ANALYSIS PIPELINE =====
+    Analysis -->|Primary Analysis| VADER[VADER<br/>NLTK SIA]
+    VADER -->|If Available| Store1[Store Results]
+  
+    Analysis -->|Fallback Analysis| TextBlob[TextBlob<br/>Rule-based]
+    TextBlob -->|If VADER Fails| Store2[Store Results]
+  
+    Analysis -->|Final Fallback| Custom[Custom Rules<br/>Keyword Matching]
+    Custom -->|If All Fail| Store3[Store Results]
+  
+    %% ===== NOTIFICATION SYSTEM =====
+    FlaskApp -->|Negative Feedback| Email[Email Notifications<br/>Flask-Mail]
+    Email --> SMTP[SMTP Server]
+  
+    %% ===== DATA STORAGE =====
+    DB --> Users[Users Table]
+    DB --> Feedback[Feedback Table<br/>+ Sentiment Results]
+  
+    %% ===== STYLING =====
+    classDef user fill:#e3f2fd,stroke:#1976d2
+    classDef frontend fill:#f3e5f5,stroke:#7b1fa2
+    classDef backend fill:#fff3e0,stroke:#f57c00
+    classDef external fill:#e8f5e8,stroke:#388e3c
+    classDef database fill:#ffecb3,stroke:#ff8f00
+  
+    class User,Admin user
+    class WebApp,Dashboard frontend
+    class FlaskApp,Auth,Analysis,Email backend
+    class VADER,TextBlob,Custom,SMTP external
+    class DB,Users,Feedback database
+```
