@@ -1,48 +1,51 @@
 # Smart Feedback Collection and Analysis System
 
-![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen) ![Python](https://img.shields.io/badge/Python-3.8%2B-blue) ![Flask](https://img.shields.io/badge/Flask-2.3.3-lightgrey)
+A full-stack web application that automatically analyzes user feedback sentiment using AI and provides real-time analytics for administrators.
 
-A full‑stack web application to collect user feedback, run instant sentiment analysis, store results, and provide an administrator dashboard with visual analytics and export features.
+## 🚀 Features
 
----
+- **🤖 AI-Powered Sentiment Analysis** - Automatically classifies feedback as Positive, Negative, or Neutral using NLTK VADER and TextBlob
+- **📊 Real-time Analytics Dashboard** - Interactive charts and visualizations with Chart.js
+- **👥 User Management** - Secure registration and authentication with JWT
+- **📧 Smart Notifications** - Automatic email alerts for critical negative feedback
+- **💾 Data Export** - Export feedback data for further analysis
+- **📱 Responsive Design** - Works seamlessly on desktop and mobile devices
 
-## Quick summary
+## 🛠️ Tech Stack
 
-- Guests can submit anonymous feedback.
-- Registered users can submit feedback, view and manage their history.
-- Administrators access a dashboard with sentiment distribution, word clouds, priority matrix, exports, and email alerts for negative feedback.
-- Sentiment analysis uses TextBlob and NLTK VADER with fallback rules.
+### Frontend
+- **HTML5** - Semantic structure and accessibility
+- **CSS3** - Responsive design and modern styling
+- **Vanilla JavaScript** - Client-side interactivity
+- **Chart.js** - Data visualization and analytics
 
----
+### Backend
+- **Python 3.8+** - Core programming language
+- **Flask** - Lightweight web framework
+- **SQLAlchemy** - Database ORM and abstraction
+- **JWT** - Secure authentication tokens
 
-## Features
+### AI/ML Components
+- **NLTK VADER** - Primary sentiment analyzer
+- **TextBlob** - Fallback sentiment analysis
+- **Custom Rules** - Keyword-based final fallback
 
-- Real‑time sentiment analysis (TextBlob, VADER)
-- Role‑based access: Guest, Registered User, Admin
-- Dashboard: charts, trends, word clouds, live refresh
-- Data export: CSV / JSON
-- Email notifications for critical/negative feedback
-- SQLite by default (configurable to other RDBMS)
-- JWT authentication for APIs
+### Database
+- **SQLite** - Relational database for development
 
----
+## 📦 Installation
 
-## Tech stack
+### Prerequisites
+- Python 3.8 or higher
+- pip (Python package manager)
+- Modern web browser
 
-- Backend: Flask 2.3.3, Flask‑SQLAlchemy, Flask‑Mail
-- NLP: TextBlob, NLTK (VADER)
-- Frontend: HTML5, CSS3, JavaScript (ES6+), Chart.js
-- DB: SQLite (default)
-- Auth: JWT
+### Setup Steps
 
----
-
-## Quick start (Windows)
-
-1. Clone and enter repo
-   ```
+1. **Clone the repository**
+   ```bash
    git clone https://github.com/sakethlingerker/Smart-Feedback-Collection-and-Analysis-System.git
-   cd "Smart Feedback Collection and Analysis System"
+   cd Smart-Feedback-Collection-and-Analysis-System
    ```
 2. Create and activate venv
    ```
@@ -61,22 +64,49 @@ A full‑stack web application to collect user feedback, run instant sentiment a
    ```
    python app.py
    ```
-6. Open in browser: http://localhost:5000
+6. Access the application
+   ```
+   Open web browser and navigate to: http://localhost:5000
+   ```
 
-Default admin:
-- Email: admin@feedback.com
-- Password: admin123
-
----
-
-## Usage overview
-
-- Guest feedback form: name (optional), email (optional), category, rating (1–5), message (min 10 chars) → analyzed and stored.
-- Registered users: register → login → feedback linked to account → view/delete own feedback.
-- Admins: login → dashboard → view all feedback, filter, export, receive alerts.
 
 ---
+## 📈 Architecture & Workflow Overview
 
+### *Workflow Steps*
+1. *User Registration/Login* → Credentials verified & stored securely  
+2. *Feedback Submission* → Data + optional image sent to backend  
+3. *Sentiment Analysis* → Processed using VADER + TextBlob NLP  
+4. *Database Storage* → Results stored in SQLite database  
+5. *Admin Dashboard* → Data visualized using Chart.js  
+6. *Report Generation* → Export as CSV or PDF
+
+---
+## 🏗️ Project Structure
+      Smart-Feedback-System/
+      ├── app.py                    # Main Flask application
+      ├── models.py                 # Database models and schema
+      ├── sentiment_analysis.py     # Sentiment analysis engine
+      ├── auth_middleware.py        # Authentication middleware
+      ├── email_notifier.py         # Email notification system
+      ├── requirements.txt          # Python dependencies
+      ├── init_db.py               # Database initialization script
+      ├── templates/               # HTML templates
+      │   ├── index.html           # Homepage and feedback form
+      │   ├── login.html           # User login page
+      │   ├── register.html        # User registration page
+      │   ├── dashboard.html       # Admin analytics dashboard
+      │   └── profile.html         # User profile and feedback history
+      └── static/                  # Static assets
+          ├── css/
+          │   ├── main.css         # Main stylesheet
+          │   └── dashboard.css    # Dashboard-specific styles
+          ├── js/
+          │   ├── main.js          # Frontend functionality
+          │   ├── auth.js          # Authentication handling
+          │   └── dashboard.js     # Dashboard charts and analytics
+          └── images/              # Image assets
+---
 ## API (examples)
 
 - POST /api/auth/register — register user
@@ -93,32 +123,13 @@ Default admin:
 
 ---
 
-## Project structure (high level)
+## 🏗 System Architecture
 
-- backend/ — Flask app, models, routes, NLP, mail helpers
-- frontend/ — HTML, CSS, JS, dashboard scripts
-- init_db.py — DB initialization and seed data
-- requirements.txt — Python deps
-- README.md — this file
+*(<img width="1648" height="567" alt="image" src="https://github.com/user-attachments/assets/e9a22223-f434-48db-a8e1-5af4f4f1301f" />
+)*
 
 ---
 
-## Development notes
-
-- Switch DB by updating DATABASE_URL in config or .env.
-- For production, serve via WSGI (Gunicorn) and configure environment variables for secret keys and mail.
-- Ensure NLTK VADER data is available (nltk.download('vader_lexicon')) when setting up.
-
----
-
-## Testing
-
-- Add/execute unit tests for:
-  - Auth endpoints (JWT lifecycle)
-  - Feedback submit and storage
-  - Sentiment analysis output
-  - Export endpoints
-- Use the provided test design template for manual and automated cases.
 
 ---
 
