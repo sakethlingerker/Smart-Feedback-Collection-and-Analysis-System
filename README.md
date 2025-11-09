@@ -194,7 +194,7 @@ A full‑stack web application to collect user feedback, run instant sentiment a
 
 ## 🏗️ Project Structure
 
-      Smart-Feedback-System/
+Smart-Feedback-System/
             ├── app.py                    # Main Flask application
             ├── models.py                 # Database models and schema
             ├── sentiment_analysis.py     # Sentiment analysis engine
@@ -217,7 +217,7 @@ A full‑stack web application to collect user feedback, run instant sentiment a
                 │   ├── auth.js          # Authentication handling
                 │   └── dashboard.js     # Dashboard charts and analytics
                 └── images/              # Image assets
-----------------------------------------------------
+----------------------------------------------------------
 
 ## 🔌 API Endpoints
 
@@ -257,8 +257,5 @@ A full‑stack web application to collect user feedback, run instant sentiment a
 
 ---
 
-<<<<<<< HEAD
+
 > *Note:* This project was developed as part of an industry project with *Tata Consultancy Services (TCS)*, demonstrating real-world application of full-stack development and AI integration.
-=======
-> *Note:* This project was developed as part of an industry project with *Tata Consultancy Services (TCS)*, demonstrating real-world application of full-stack development and AI integration.
->>>>>>> e6d2a0391eb0d68928e656ed71b7ae3f6494c512
