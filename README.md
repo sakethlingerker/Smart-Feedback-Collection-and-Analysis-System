@@ -257,4 +257,8 @@ A full‑stack web application to collect user feedback, run instant sentiment a
 
 ---
 
+<<<<<<< HEAD
 > *Note:* This project was developed as part of an industry project with *Tata Consultancy Services (TCS)*, demonstrating real-world application of full-stack development and AI integration.
+=======
+> *Note:* This project was developed as part of an industry project with *Tata Consultancy Services (TCS)*, demonstrating real-world application of full-stack development and AI integration.
+>>>>>>> e6d2a0391eb0d68928e656ed71b7ae3f6494c512
