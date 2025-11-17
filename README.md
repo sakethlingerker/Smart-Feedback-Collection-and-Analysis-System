@@ -194,29 +194,29 @@ A full‑stack web application to collect user feedback, run instant sentiment a
 
 ## 🏗️ Project Structure
 
-Smart-Feedback-System/
-            ├── app.py                    # Main Flask application
-            ├── models.py                 # Database models and schema
-            ├── sentiment_analysis.py     # Sentiment analysis engine
-            ├── auth_middleware.py        # Authentication middleware
-            ├── email_notifier.py         # Email notification system
-            ├── requirements.txt          # Python dependencies
-            ├── init_db.py               # Database initialization script
-            ├── templates/               # HTML templates
-            │   ├── index.html           # Homepage and feedback form
-            │   ├── login.html           # User login page
-            │   ├── register.html        # User registration page
-            │   ├── dashboard.html       # Admin analytics dashboard
-            │   └── profile.html         # User profile and feedback history
-            └── static/                  # Static assets
-                ├── css/
-                │   ├── main.css         # Main stylesheet
-                │   └── dashboard.css    # Dashboard-specific styles
-                ├── js/
-                │   ├── main.js          # Frontend functionality
-                │   ├── auth.js          # Authentication handling
-                │   └── dashboard.js     # Dashboard charts and analytics
-                └── images/              # Image assets
+      Smart-Feedback-System/
+                  ├── app.py                    # Main Flask application
+                  ├── models.py                 # Database models and schema
+                  ├── sentiment_analysis.py     # Sentiment analysis engine
+                  ├── auth_middleware.py        # Authentication middleware
+                  ├── email_notifier.py         # Email notification system
+                  ├── requirements.txt          # Python dependencies
+                  ├── init_db.py               # Database initialization script
+                  ├── templates/               # HTML templates
+                  │   ├── index.html           # Homepage and feedback form
+                  │   ├── login.html           # User login page
+                  │   ├── register.html        # User registration page
+                  │   ├── dashboard.html       # Admin analytics dashboard
+                  │   └── profile.html         # User profile and feedback history
+                  └── static/                  # Static assets
+                      ├── css/
+                      │   ├── main.css         # Main stylesheet
+                      │   └── dashboard.css    # Dashboard-specific styles
+                      ├── js/
+                      │   ├── main.js          # Frontend functionality
+                      │   ├── auth.js          # Authentication handling
+                      │   └── dashboard.js     # Dashboard charts and analytics
+                      └── images/              # Image assets
 ----------------------------------------------------------
 
 ## 🔌 API Endpoints
