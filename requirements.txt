@@ -26,3 +26,6 @@ gunicorn==21.2.0
 Werkzeug==2.3.7
 PyJWT==2.8.0
 email-validator==2.1.1  # FIXED: Changed from 2.1.0 to 2.1.1
+
+
+torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
