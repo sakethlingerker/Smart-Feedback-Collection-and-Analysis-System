@@ -1,52 +1,32 @@
-# # Flask and extensions
-# flask==2.3.3
-# flask-cors==4.0.0
-# flask-sqlalchemy==3.0.5
-# flask-mail==0.9.1
-# flask-login==0.6.3
-# # Environment and HTTP
-# python-dotenv==1.0.0
-# requests==2.31.0
-
-# # Sentiment Analysis & NLP
-# textblob==0.17.1
-# nltk==3.8.1
-# transformers==4.30.0
-#   # For Hugging Face models. For CPU-only: torch==2.0.1+cpu --find-links https://download.pytorch.org/whl/torch_stable.html
-
-# # Image and Data Visualization
-# pillow==9.5.0
-# wordcloud==1.9.2
-# matplotlib==3.7.1
-
-# # Production Server (recommended)
-# gunicorn==21.2.0
-
-# # Authentication (NEW ADDITIONS)
-# Werkzeug==2.3.7
-# PyJWT==2.8.0
-# email-validator==2.1.1  # FIXED: Changed from 2.1.0 to 2.1.1
-
-
-# torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
-
+# Flask and extensions
 flask==2.3.3
 flask-cors==4.0.0
 flask-sqlalchemy==3.0.5
 flask-mail==0.9.1
 flask-login==0.6.3
+# Environment and HTTP
 python-dotenv==1.0.0
 requests==2.31.0
+
+# Sentiment Analysis & NLP
+textblob==0.17.1
+nltk==3.8.1
+transformers==4.30.0
+  # For Hugging Face models. For CPU-only: torch==2.0.1+cpu --find-links https://download.pytorch.org/whl/torch_stable.html
+
+# Image and Data Visualization
+pillow==9.5.0
+wordcloud==1.9.2
+matplotlib==3.7.1
+numpy==1.24.3
+# Production Server (recommended)
 gunicorn==21.2.0
 
-# Fixed versions for compatibility
-numpy==1.24.3
-matplotlib==3.7.1
-pillow==9.5.0
-nltk==3.8.1
-textblob==0.17.1
+# Authentication (NEW ADDITIONS)
+Werkzeug==2.3.7
 PyJWT==2.8.0
-# Remove these temporarily to fix deployment
-# transformers==4.30.0
-# torch==2.0.1
-# wordcloud==1.9.2
+email-validator==2.1.1  # FIXED: Changed from 2.1.0 to 2.1.1
+
+
+# torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
+
